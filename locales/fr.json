@@ -53,5 +53,13 @@
     "trade_missing": "Vous n'avez pas toutes les cartes pour cet échange",
     "trade_expired": "Cette demande n'est plus disponible",
     "trades_refreshed": "Demandes des collectionneurs actualisées",
-    "command_refresh": "Actualiser les demandes des collectionneurs de cartes (admin)"
+    "command_refresh": "Actualiser les demandes des collectionneurs de cartes (admin)",
+    "box_cards_only": "Une boîte de cartes ne peut contenir que des cartes, des séries et des paquets de cartes. Tout le reste vous a été rendu.",
+    "sets_title": "Séries Complètes",
+    "sell_title": "Vos Cartes",
+    "set_ready": "Vous avez les %s cartes de cette série",
+    "make_set": "Créer la Série",
+    "set_pill": "Série",
+    "set_made": "Vous avez assemblé : %s",
+    "set_missing": "Vous n'avez pas toutes les cartes de cette série"
 }

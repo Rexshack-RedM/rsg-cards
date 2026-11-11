@@ -106,10 +106,16 @@ Config.Card = {
 }
 
 -- Card storage box stash
+-- Use the box to open it beside your inventory; use it again to close just the box.
 Config.Storage = {
     MaxWeight = 500,
     MaxSlots  = 81,
-    OpenDelay = 300, -- ms to wait after using the box before its storage opens (the inventory closes first)
+    OpenDelay = 300, -- ms to wait before the box opens when the box item is `shouldClose = true` (the inventory closes first)
+
+    -- Only these item categories (the `category` field in rsg-core shared items) can be kept in a box.
+    -- Every rsg-cards card, set and pack is always allowed, even if its category is missing.
+    -- Anything else put in a box is handed straight back to the player.
+    AllowedCategories = { 'card', 'cardset', 'cardpack' },
 }
 
 -- Sounds (interact-sound). Skipped automatically if interact-sound isn't running.
@@ -128,6 +134,7 @@ Config.Shop = {
     Payment          = 'cash', -- 'cash' or 'bloodmoney'
     InteractDistance = 5.0,    -- server-side distance check
     PersistStock     = true,   -- keep stock across restarts (rsg-inventory)
+    CraftSets        = true,   -- vendors turn all 12 cards of a set into the complete set
 
     -- amount = stock
     Items = {

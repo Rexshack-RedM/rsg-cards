@@ -53,5 +53,13 @@
     "trade_missing": "Nie masz wszystkich kart do tej wymiany",
     "trade_expired": "To zamówienie nie jest już dostępne",
     "trades_refreshed": "Zamówienia kolekcjonerów odświeżone",
-    "command_refresh": "Odśwież zamówienia kolekcjonerów kart (admin)"
+    "command_refresh": "Odśwież zamówienia kolekcjonerów kart (admin)",
+    "box_cards_only": "W pudełku na karty można trzymać tylko karty, zestawy kart i paczki kart. Wszystko inne zostało ci zwrócone.",
+    "sets_title": "Kompletne Zestawy",
+    "sell_title": "Twoje Karty",
+    "set_ready": "Masz wszystkie %s kart z tego zestawu",
+    "make_set": "Utwórz Zestaw",
+    "set_pill": "Zestaw",
+    "set_made": "Skompletowano: %s",
+    "set_missing": "Nie masz wszystkich kart z tego zestawu"
 }

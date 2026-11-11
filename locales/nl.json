@@ -53,5 +53,13 @@
     "trade_missing": "Je hebt niet alle kaarten voor deze ruil",
     "trade_expired": "Dit verzoek is niet meer beschikbaar",
     "trades_refreshed": "Verzoeken van verzamelaars vernieuwd",
-    "command_refresh": "Vernieuw de verzoeken van de kaartenverzamelaars (admin)"
+    "command_refresh": "Vernieuw de verzoeken van de kaartenverzamelaars (admin)",
+    "box_cards_only": "In een kaartendoos kunnen alleen kaarten, kaartensets en pakjes kaarten worden bewaard. Al het andere is aan je teruggegeven.",
+    "sets_title": "Complete Sets",
+    "sell_title": "Jouw Kaarten",
+    "set_ready": "Je hebt alle %s kaarten van deze set",
+    "make_set": "Set Maken",
+    "set_pill": "Set",
+    "set_made": "Je hebt de %s samengesteld",
+    "set_missing": "Je hebt niet alle kaarten van deze set"
 }

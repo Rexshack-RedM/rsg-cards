@@ -32,8 +32,13 @@
 
             <!-- vendor: sell cards -->
             <div id="view-vendor" class="view hidden">
-                <div class="list" id="vendor-list"></div>
-                <div class="empty hidden" id="vendor-empty"></div>
+                <div class="scroll" id="vendor-scroll">
+                    <div class="section-title hidden" id="sets-title"></div>
+                    <div class="list" id="sets-list"></div>
+                    <div class="section-title hidden" id="sell-title"></div>
+                    <div class="list" id="vendor-list"></div>
+                    <div class="empty hidden" id="vendor-empty"></div>
+                </div>
                 <div class="actions">
                     <button class="wood-btn" id="sell-all" type="button"></button>
                     <button class="wood-btn muted" id="buy" type="button"></button>

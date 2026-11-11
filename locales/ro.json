@@ -53,5 +53,13 @@
     "trade_missing": "Nu ai toate cartonașele pentru acest schimb",
     "trade_expired": "Această cerere nu mai este disponibilă",
     "trades_refreshed": "Cererile colecționarilor au fost actualizate",
-    "command_refresh": "Actualizează cererile colecționarilor de cartonașe (admin)"
+    "command_refresh": "Actualizează cererile colecționarilor de cartonașe (admin)",
+    "box_cards_only": "Într-o cutie de cartonașe pot fi păstrate doar cartonașe, seturi și pachete de cartonașe. Restul ți-a fost returnat.",
+    "sets_title": "Seturi Complete",
+    "sell_title": "Cartonașele Tale",
+    "set_ready": "Ai toate cele %s cartonașe din acest set",
+    "make_set": "Creează Setul",
+    "set_pill": "Set",
+    "set_made": "Ai completat: %s",
+    "set_missing": "Nu ai toate cartonașele din acest set"
 }

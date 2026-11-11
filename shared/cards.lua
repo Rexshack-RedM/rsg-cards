@@ -15,7 +15,7 @@ for setIndex, set in ipairs(Config.Sets) do
         tier = 'deck',
         deck = true,
         price = set.deckPrice,
-        order = setIndex * 100,
+        order = setIndex, -- sets list before single cards
     }
 
     Cards.ByTier[set.tier] = Cards.ByTier[set.tier] or {}

@@ -149,8 +149,40 @@ function renderVendor(data) {
   $('buy').textContent = t('buy_supplies');
 
   const items = (data && data.items) || [];
+  const sets = (data && data.sets) || [];
   const list = $('vendor-list');
   list.replaceChildren();
+
+  // complete sets the vendor can put together
+  const setsList = $('sets-list');
+  setsList.replaceChildren();
+  sets.forEach((set) => {
+    const row = el('div', 'row ready');
+    const icon = el('div', 'badge-icon');
+    icon.append(itemImage(set.image));
+    const text = el('div', 'row-text');
+    text.append(el('div', 'row-title', set.label), el('div', 'row-desc', t('set_ready', set.cards)));
+    const make = el('button', 'wood-btn small', t('make_set'));
+    make.addEventListener('click', async () => {
+      if (waiting) return;
+      waiting = true;
+      const result = await post('makeSet', { id: set.id });
+      waiting = false;
+      if (result && mode === 'vendor') {
+        toast(result.message, result.type);
+        renderVendor(result);
+      }
+    });
+    row.append(icon, text);
+    if (set.times > 1) row.append(el('span', 'pill ok', `x${set.times}`));
+    row.append(make);
+    setsList.append(row);
+  });
+  $('sets-title').textContent = t('sets_title');
+  $('sets-title').classList.toggle('hidden', sets.length === 0);
+  setsList.classList.toggle('hidden', sets.length === 0);
+  $('sell-title').textContent = t('sell_title');
+  $('sell-title').classList.toggle('hidden', sets.length === 0 || items.length === 0);
 
   let total = 0;
   items.forEach((item) => {
@@ -192,7 +224,9 @@ function renderVendor(data) {
       }
     });
 
-    row.append(icon, text, stepper, sell);
+    row.append(icon, text);
+    if (item.deck) row.append(el('span', 'pill', t('set_pill')));
+    row.append(stepper, sell);
     list.append(row);
   });
 

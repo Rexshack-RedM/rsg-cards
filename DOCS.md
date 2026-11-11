@@ -24,7 +24,7 @@ For server owners and developers. Player-facing overview and install steps are i
 | `shared/cards_points.lua` | `Config.CardPoints`: world location of each card |
 | `shared/cards.lua` | Builds the global `Cards` lookup tables from `Config.Sets` |
 | `server/server.lua` | Database setup, shared server helpers (`CardsServer`), packs, world pickups, collection tracking, storage box, inspect usable items |
-| `server/vendor.lua` | Card vendor: selling cards, rsg-inventory shop for packs and boxes |
+| `server/vendor.lua` | Card vendor: selling cards and sets, making sets from 12 cards, rsg-inventory shop for packs and boxes |
 | `server/trades.lua` | Card collectors: rotating requests and trades, `/refreshcardtrades` |
 | `client/client.lua` | NUI bridge (focus, push-to-talk whitelist), pack / vendor / collector UI, card inspect |
 | `client/world.lua` | NPCs, blips, prompts, world card props, pickups, Eagle Eye hint, cleanup |
@@ -41,10 +41,10 @@ Flow of a reward (the same pattern everywhere): the client only asks ("flip card
 
 | Item | Type | Notes |
 |---|---|---|
-| `card_package_cards` | useable | Card pack |
-| `card_storage_box` | useable, unique | `info.serie` holds the box serial once registered |
-| `card_cigcard_<set>_c<1-12>` | useable | Single card |
-| `card_cigcard_<set>` | not useable | Complete set |
+| `card_package_cards` | useable, category `cardpack` | Card pack |
+| `card_storage_box` | useable, unique, `shouldClose = false` | `info.serie` holds the box serial once registered |
+| `card_cigcard_<set>_c<1-12>` | useable, category `card` | Single card |
+| `card_cigcard_<set>` | not useable, category `cardset` | Complete set. Made from one each of that set's 12 cards |
 
 Set ids: `act`, `amer`, `aml`, `inv`, `art`, `grl`, `lnd`, `plt`, `gun`, `hrs`, `spt`, `veh`.
 
@@ -86,6 +86,9 @@ One entry per card; the item name is also the cooldown key, so don't list the sa
 
 Stash id `box_<serial>`, opened with `exports['rsg-inventory']:OpenInventory`. Contents are stored by rsg-inventory.
 
+- **Open / close:** using the box opens it beside the player inventory. Using the same box again while it is open calls `OpenInventory(src)` with no stash, which removes the box panel and leaves the inventory open.
+- **Card-only rule:** rsg-inventory has no per-stash item filter, so rsg-cards checks the box itself: when it opens, after every move in or out of it (it listens to `rsg-inventory:server:move`), and when the inventory closes. Anything that is not a rsg-cards card, set or pack, and whose `category` is not in `Config.Storage.AllowedCategories`, is removed from the box and given back to the player, or dropped at their feet if they can't carry it.
+
 ## Exports
 
 rsg-cards has no exports. Other resources work with the items directly through rsg-inventory (see the integration examples). The `Cards` table only exists inside this resource.
@@ -101,9 +104,10 @@ Other resources normally don't need these. They are listed so you know what each
 | `rsg-cards:server:flipCard` | `index` | card data or `false` | Player has an open pack, index valid and not flipped yet |
 | `rsg-cards:server:getPickups` | – | `{ [item] = secondsLeft }` | – |
 | `rsg-cards:server:pickupCard` | `pointIndex` | card data + `cooldown`, `{ cooldown }` or `false` | Distance to the point, per-character cooldown, rate limit, inventory space |
-| `rsg-cards:server:getVendor` | `shopId` | `{ items }` or `false` | Distance to the vendor |
-| `rsg-cards:server:sell` | `shopId, item, amount` | `{ message, type, items }` or `false` | Distance, item is a card, whole amount ≥ 1 and owned, rate limit. Price from `Config.Sets` |
-| `rsg-cards:server:sellAll` | `shopId` | `{ message, type, items }` or `false` | Distance, rate limit. Only cards and sets are sold |
+| `rsg-cards:server:getVendor` | `shopId` | `{ items, sets }` or `false` | Distance to the vendor. `sets` = sets the player holds all 12 cards of |
+| `rsg-cards:server:sell` | `shopId, item, amount` | `{ message, type, items, sets }` or `false` | Distance, item is a card, whole amount ≥ 1 and owned, rate limit. Price from `Config.Sets` |
+| `rsg-cards:server:sellAll` | `shopId` | `{ message, type, items, sets }` or `false` | Distance, rate limit. Only cards and sets are sold |
+| `rsg-cards:server:makeSet` | `shopId, setId` | `{ message, type, items, sets }` or `false` | Distance, `Config.Shop.CraftSets`, set exists, all 12 cards owned, inventory space, rate limit. A failed removal refunds |
 | `rsg-cards:server:getTrades` | `locationId` | `{ offers, refresh }` or `false` | Distance to the collector |
 | `rsg-cards:server:trade` | `locationId, offerId` | `{ message, type, offers, refresh }` or `false` | Distance, request still active, every card owned, inventory space, rate limit |
 
@@ -115,6 +119,8 @@ Card data: `{ item, label, image, tier, deck, isNew, collected, total }`.
 |---|---|---|
 | `rsg-cards:server:closePack` | – | Pack UI closed: gives the cards that were not turned over |
 | `rsg-cards:server:openShop` | `shopId` | Opens the rsg-inventory shop (distance checked) |
+| `rsg-cards:server:boxClosed` | – | Inventory closed: checks the box contents one last time |
+| `rsg-inventory:server:move` | – | Also handled here (read-only) to check the open box after a move |
 
 ### Client events
 
@@ -122,6 +128,7 @@ Card data: `{ item, label, image, tier, deck, isNew, collected, total }`.
 |---|---|---|
 | `rsg-cards:client:openPack` | `amount` | (net) Sent by the server after a pack was consumed |
 | `rsg-cards:client:inspectCard` | `item` | (net) Hold and look at a card |
+| `rsg-cards:client:boxOpened` | – | (net) Starts watching for the inventory to close |
 | `rsg-cards:client:openVendor` | `shopId` | (local) Open the vendor UI |
 | `rsg-cards:client:openTrades` | `locationId` | (local) Open the collector UI |
 | `rsg-cards:client:takecard` | `pointIndex` | (local) Pick up a world card (used by prompts) |
@@ -184,7 +191,7 @@ What the script enforces:
 What you must look after:
 
 - Anyone holding a storage box item can open that box. Giving away the item gives away its contents.
-- Storage boxes accept any item, not only cards.
+- The card-only rule on boxes is enforced by rsg-cards after the move, not by rsg-inventory before it, so a rejected item is in the box for a fraction of a second before it is handed back.
 - Sell prices are in `Config.Sets`; check them against your economy before going live. Vendors buy without limit.
 
 ## Database schema
@@ -222,6 +229,10 @@ With `Config.AutoDatabase = true` these are created on start, and a legacy `hdrp
 
 **Change pack odds** – edit the weights in `Config.Pack.Chances`. They are relative whole numbers; the defaults add up to 1000, so `5` means 0.5%.
 
+**Let boxes hold other items** – add the item's category to `Config.Storage.AllowedCategories`.
+
+**Turn off set making at vendors** – `Config.Shop.CraftSets = false`.
+
 **Move or add a vendor / collector** – add an entry to `Config.Shop.Locations` or `Config.Trades.Locations` with a unique `id`, `coords`, `npcmodel` and `npccoords`.
 
 **Move or add a world card** – edit `shared/cards_points.lua`. `card_cigcard_grl_c1` has no world location in the shipped data; add one if you want it findable outside packs.
@@ -246,6 +257,8 @@ With `Config.AutoDatabase = true` these are created on start, and a legacy `hdrp
 | No sound | interact-sound must be running and have the `dealfour` and `flip` sounds, or set `Config.Sounds.enabled = false` |
 | No world cards appear | They only spawn after the character has loaded, within `Config.DistanceSpawn`, and not while on cooldown |
 | Console: `database setup failed` | Check oxmysql, or set `Config.AutoDatabase = false` and import `install.sql` |
+| Items jump back out of a storage box | Only cards, sets, packs and `Config.Storage.AllowedCategories` are allowed |
+| The inventory flickers when the box is used | Set the box item to `shouldClose = false` in rsg-core items |
 | Using a storage box closes the inventory and nothing opens | The box opens `Config.Storage.OpenDelay` ms after use, once rsg-inventory has closed the inventory. Raise the delay if the box flashes open and shut |
 | Old boxes are empty after upgrading | The box table must be `rsg_cards_boxes` (auto-renamed from `hdrp_boxes`); stash ids are unchanged (`box_<serial>`) |
 | No Discord logs | Add a `rsg-cards` webhook to rsg-log |

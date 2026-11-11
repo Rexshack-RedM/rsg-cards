@@ -38,6 +38,7 @@ local function getStrings()
         'close', 'tier_basic', 'tier_rare', 'tier_ultra', 'tier_v', 'tier_vmax', 'tier_deck',
         'vendor_title', 'vendor_subtitle', 'vendor_empty', 'vendor_each', 'vendor_owned', 'sell', 'sell_all', 'buy_supplies',
         'confirm_title', 'confirm_sell_all', 'confirm', 'cancel',
+        'sets_title', 'sell_title', 'set_ready', 'make_set', 'set_pill',
         'trade_title', 'trade_subtitle', 'trade_empty', 'trade_button', 'trade_needs', 'trade_refresh',
     }) do
         uiStrings[key] = locale(key)
@@ -153,6 +154,11 @@ RegisterNUICallback('sellAll', function(_, cb)
     cb(RSGCore.Functions.AwaitCallback('rsg-cards:server:sellAll', 5000, uiLocation) or false)
 end)
 
+RegisterNUICallback('makeSet', function(body, cb)
+    if uiMode ~= 'vendor' then return cb(false) end
+    cb(RSGCore.Functions.AwaitCallback('rsg-cards:server:makeSet', 5000, uiLocation, body.id) or false)
+end)
+
 RegisterNUICallback('buy', function(_, cb)
     local shopId = uiLocation
     local isVendor = uiMode == 'vendor'
@@ -174,6 +180,21 @@ end)
 RegisterNUICallback('trade', function(body, cb)
     if uiMode ~= 'trade' then return cb(false) end
     cb(RSGCore.Functions.AwaitCallback('rsg-cards:server:trade', 5000, uiLocation, body.id) or false)
+end)
+
+---------------------------------------------------------------------
+-- CARD STORAGE BOX
+---------------------------------------------------------------------
+local watchingBox = false
+
+-- tell the server when the inventory closes so it can check what was left in the box
+RegisterNetEvent('rsg-cards:client:boxOpened', function()
+    if watchingBox then return end
+    watchingBox = true
+    Wait(1000)
+    while exports['rsg-inventory']:IsOpen() do Wait(500) end
+    watchingBox = false
+    TriggerServerEvent('rsg-cards:server:boxClosed')
 end)
 
 ---------------------------------------------------------------------

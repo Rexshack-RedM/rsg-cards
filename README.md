@@ -2,7 +2,7 @@
 
 Collectable cigarette cards for the RSG Framework: 144 cards in 12 sets, found in the world, pulled from card packs, traded with collectors and sold to card vendors.
 
-**Version:** 3.0.0 · **Requires:** `rsg-core`, `rsg-inventory`, `rsg-target`, `oxmysql` · **Optional:** `interact-sound`, `rsg-log` · **ox_lib:** not required
+**Version:** 3.0.2 · **Requires:** `rsg-core`, `rsg-inventory`, `rsg-target`, `oxmysql` · **Optional:** `interact-sound`, `rsg-log` · **ox_lib:** not required
 
 > Server owners and developers: see **[DOCS.md](DOCS.md)** for the architecture, events, callbacks, security model and database schema.
 
@@ -12,9 +12,10 @@ Collectable cigarette cards for the RSG Framework: 144 cards in 12 sets, found i
 - **Card packs** – open a pack and turn over 4 cards in a card-flip UI. Rarity chances are configurable
 - **Cards in the world** – 143 cards are hidden around the map. Pick one up and that spot goes on a per-character cooldown (saved in the database, survives restarts)
 - **Eagle Eye** – world cards glow in Eagle Eye and a heartbeat gets faster the closer you are
-- **Card vendors** – buy packs and storage boxes, sell single cards or everything at once
+- **Card vendors** – buy packs and storage boxes, sell single cards, complete sets or everything at once
+- **Make sets** – a vendor spots when you hold all 12 cards of a set and turns them into the complete set
 - **Card collectors** – NPCs who swap a handful of cards from one set for the complete set. Requests rotate on a timer
-- **Storage box** – every box gets its own serial number and stash
+- **Storage box** – every box gets its own serial number and stash, opens beside your inventory, and only holds cards, sets and packs
 - **Inspect** – use a card from your inventory to hold it and turn it over
 - **Collection tracking** – the script remembers every card a character has ever found and announces a complete collection
 - Server-authoritative: every reward, price and cooldown is decided on the server
@@ -39,7 +40,7 @@ Collectable cigarette cards for the RSG Framework: 144 cards in 12 sets, found i
 
 - The old `hdrp_boxes` table is renamed to `rsg_cards_boxes` automatically, so existing boxes keep their contents.
 - The pack item is `card_package_cards` (the old code looked for the misspelt `card_packge_cards`).
-- Single cards must be `useable = true` in `rsg-core/shared/items.lua` to be inspected. `installation/shared_items.lua` has been updated; copy it over your old entries.
+- Single cards must be `useable = true` in `rsg-core/shared/items.lua` to be inspected. `installation/shared_items.lua` has been updated (it also adds the `card` / `cardset` / `cardpack` categories and makes the box `shouldClose = false`); copy it over your old entries.
 - `shared/config.lua` has a new layout. Start from the new file and re-apply your changes.
 - The rsg-log webhook name is now `rsg-cards`.
 
@@ -68,9 +69,11 @@ Everything is in `shared/config.lua`.
 | `Config.Card.Cooldown` | `360` | Minutes before a character can collect the same card again |
 | `Config.Card.InspectTime` | `15000` | Longest time a card is held when inspected (ms) |
 | `Config.Card.EagleEye` | enabled, 50 m | Eagle Eye glow and heartbeat hint |
-| `Config.Storage` | 500 weight, 81 slots, 300 ms | Size of a storage box, and the delay before it opens after use |
+| `Config.Storage` | 500 weight, 81 slots, 300 ms | Size of a storage box, and the delay before it opens when the box item is `shouldClose = true` |
+| `Config.Storage.AllowedCategories` | `card`, `cardset`, `cardpack` | Item categories a box accepts. rsg-cards cards, sets and packs are always accepted; anything else is handed back |
 | `Config.Sounds` | enabled | interact-sound names for opening a pack / flipping a card |
 | `Config.Shop.Payment` | `cash` | Money type paid for sold cards (`cash` or `bloodmoney`) |
+| `Config.Shop.CraftSets` | `true` | Vendors turn all 12 cards of a set into the complete set |
 | `Config.Shop.Items` | pack $5, box $50 | What vendors sell (`amount` = stock) |
 | `Config.Shop.Locations` | 2 | Vendor NPCs |
 | `Config.Trades.Refresh` | `90` | Minutes between new collector requests |
@@ -89,9 +92,9 @@ Card locations are in `shared/cards_points.lua` (`item` + `coords`).
 | Open a pack | Use `card_package_cards`, then click each card to turn it over. Cards you don't turn over are still given when you close |
 | Find a card | Walk up to a card in the world and target it (or press the prompt key). Use Eagle Eye to spot them |
 | Look at a card | Use the card from your inventory |
-| Store cards | Use `card_storage_box`. The first use registers its serial number |
-| Sell cards / buy packs | Talk to a card vendor |
-| Get a complete set | Talk to a card collector and bring the cards they ask for |
+| Store cards | Use `card_storage_box` to open it beside your inventory, then drag cards in. Use the box again to close just the box. The first use registers its serial number |
+| Sell cards and sets / buy packs | Talk to a card vendor |
+| Get a complete set | Collect all 12 cards of a set and press **Make Set** at a card vendor, or bring a card collector the cards they ask for |
 
 ### Commands
 

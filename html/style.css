@@ -158,6 +158,17 @@ html, body {
 .wood-btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; border-color: var(--rdr-gold-dim); }
 
 /* ---------- lists ---------- */
+.scroll { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; padding-right: 4px; }
+.scroll .list { overflow: visible; padding-right: 0; flex: none; }
+.section-title {
+  margin: 4px 0 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--rdr-muted);
+}
+.list + .section-title { margin-top: 16px; }
+.row.ready { border-color: var(--rdr-cost-ok); }
 .list {
   display: flex;
   flex-direction: column;

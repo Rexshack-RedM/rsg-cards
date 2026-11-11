@@ -53,5 +53,13 @@
     "trade_missing": "You don't have all the cards for this trade",
     "trade_expired": "This request is no longer available",
     "trades_refreshed": "Collector requests refreshed",
-    "command_refresh": "Refresh the card collector requests (admin)"
+    "command_refresh": "Refresh the card collector requests (admin)",
+    "box_cards_only": "Only cards, card sets and card packs can be kept in a card box. Everything else was returned to you.",
+    "sets_title": "Complete Sets",
+    "sell_title": "Your Cards",
+    "set_ready": "You have all %s cards of this set",
+    "make_set": "Make Set",
+    "set_pill": "Set",
+    "set_made": "You put together the %s",
+    "set_missing": "You don't have every card of this set"
 }

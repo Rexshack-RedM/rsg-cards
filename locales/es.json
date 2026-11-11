@@ -53,5 +53,13 @@
     "trade_missing": "No tienes todos los cromos para este cambio",
     "trade_expired": "Esta petición ya no está disponible",
     "trades_refreshed": "Peticiones de los coleccionistas actualizadas",
-    "command_refresh": "Actualizar las peticiones de los coleccionistas de cromos (admin)"
+    "command_refresh": "Actualizar las peticiones de los coleccionistas de cromos (admin)",
+    "box_cards_only": "En una caja de cromos solo se pueden guardar cromos, colecciones y paquetes de cromos. Todo lo demás se te ha devuelto.",
+    "sets_title": "Colecciones Completas",
+    "sell_title": "Tus Cromos",
+    "set_ready": "Tienes los %s cromos de esta colección",
+    "make_set": "Crear Colección",
+    "set_pill": "Colección",
+    "set_made": "Has completado: %s",
+    "set_missing": "No tienes todos los cromos de esta colección"
 }

@@ -53,5 +53,13 @@
     "trade_missing": "Du hast nicht alle Karten für diesen Tausch",
     "trade_expired": "Diese Anfrage ist nicht mehr verfügbar",
     "trades_refreshed": "Sammleranfragen aktualisiert",
-    "command_refresh": "Anfragen der Kartensammler aktualisieren (Admin)"
+    "command_refresh": "Anfragen der Kartensammler aktualisieren (Admin)",
+    "box_cards_only": "In einer Kartenkiste können nur Karten, Kartensets und Kartenpäckchen aufbewahrt werden. Alles andere wurde dir zurückgegeben.",
+    "sets_title": "Komplette Sets",
+    "sell_title": "Deine Karten",
+    "set_ready": "Du hast alle %s Karten dieses Sets",
+    "make_set": "Set erstellen",
+    "set_pill": "Set",
+    "set_made": "Du hast das %s zusammengestellt",
+    "set_missing": "Du hast nicht alle Karten dieses Sets"
 }

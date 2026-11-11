@@ -53,5 +53,13 @@
     "trade_missing": "Você não tem todos os cartões para esta troca",
     "trade_expired": "Este pedido não está mais disponível",
     "trades_refreshed": "Pedidos dos colecionadores atualizados",
-    "command_refresh": "Atualizar os pedidos dos colecionadores de cartões (admin)"
+    "command_refresh": "Atualizar os pedidos dos colecionadores de cartões (admin)",
+    "box_cards_only": "Uma caixa de cartões só pode guardar cartões, coleções e pacotes de cartões. Todo o resto foi devolvido a você.",
+    "sets_title": "Coleções Completas",
+    "sell_title": "Seus Cartões",
+    "set_ready": "Você tem os %s cartões desta coleção",
+    "make_set": "Montar Coleção",
+    "set_pill": "Coleção",
+    "set_made": "Você montou: %s",
+    "set_missing": "Você não tem todos os cartões desta coleção"
 }

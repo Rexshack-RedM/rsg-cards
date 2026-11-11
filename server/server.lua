@@ -379,6 +379,66 @@ local function createUniqueSerial()
     end
 end
 
+local openBoxes = {} -- [src] = serial of the box the player has open beside their inventory
+
+local allowedCategories = {}
+for _, category in ipairs(Config.Storage.AllowedCategories or {}) do allowedCategories[category] = true end
+
+local function canStore(name)
+    if Cards.Info[name] or name == Config.Items.Pack then return true end
+    local item = RSGCore.Shared.Items[name]
+    return item ~= nil and item.category ~= nil and allowedCategories[item.category] == true
+end
+
+-- Hands anything that isn't a card, set or pack back to the player (or drops it at their feet).
+local function sweepBox(src, serial)
+    local stashId = 'box_' .. serial
+    local ok, stash = pcall(function() return Inventory:GetInventory(stashId) end)
+    if not ok or type(stash) ~= 'table' or type(stash.items) ~= 'table' then return end
+
+    local rejected = {}
+    for _, item in pairs(stash.items) do
+        if type(item) == 'table' and item.name and not canStore(item.name) then rejected[#rejected + 1] = item end
+    end
+    if #rejected == 0 then return end
+
+    for _, item in ipairs(rejected) do
+        local amount = tonumber(item.amount) or 1
+        if Inventory:RemoveItem(stashId, item.name, amount, item.slot, 'rsg-cards:box-reject') then
+            local returned = RSGCore.Functions.GetPlayer(src) ~= nil
+                and Inventory:CanAddItem(src, item.name, amount)
+                and Inventory:AddItem(src, item.name, amount, item.info, nil, 'rsg-cards:box-reject')
+            if not returned and not Inventory:ForceDropItem(src, item.name, amount, item.info, 'rsg-cards:box-reject') then
+                -- could not return or drop it: put it back rather than lose it
+                Inventory:AddItem(stashId, item.name, amount, item.info, nil, 'rsg-cards:box-reject')
+            end
+        end
+    end
+    Inventory:SaveStash(stashId)
+    CardsServer.notify(src, locale('box_cards_only'), 'error')
+end
+
+local function closeBox(src)
+    local serial = openBoxes[src]
+    if not serial then return end
+    openBoxes[src] = nil
+    sweepBox(src, serial)
+end
+
+local function openBox(src, serial)
+    if not RSGCore.Functions.GetPlayer(src) then return end
+    sweepBox(src, serial) -- clears out anything stored before the card-only rule
+    local opened = Inventory:OpenInventory(src, 'box_' .. serial, {
+        label = locale('box_label', serial),
+        maxweight = Config.Storage.MaxWeight,
+        slots = Config.Storage.MaxSlots,
+    })
+    if opened then
+        openBoxes[src] = serial
+        TriggerClientEvent('rsg-cards:client:boxOpened', src)
+    end
+end
+
 RSGCore.Functions.CreateUseableItem(Config.Items.Box, function(source, item)
     local src = source
     local Player = RSGCore.Functions.GetPlayer(src)
@@ -386,9 +446,23 @@ RSGCore.Functions.CreateUseableItem(Config.Items.Box, function(source, item)
     if not CardsServer.throttle(src, 'box', 1) then return end
     if not dbReady then return CardsServer.notify(src, locale('box_error'), 'error') end
 
+    -- rsg-inventory closes the inventory right after a `shouldClose` item is used,
+    -- so anything we open has to wait until that has happened
+    local shared = RSGCore.Shared.Items[Config.Items.Box]
+    local delay = shared and shared.shouldClose and (Config.Storage.OpenDelay or 300) or 0
+
     local citizenid = Player.PlayerData.citizenid
     local info = type(item.info) == 'table' and item.info or {}
     local serial = info.serie
+
+    -- using the box that is already open closes just the box and leaves the inventory open
+    if openBoxes[src] and openBoxes[src] == serial then
+        closeBox(src)
+        return SetTimeout(delay, function()
+            if RSGCore.Functions.GetPlayer(src) then Inventory:OpenInventory(src) end
+        end)
+    end
+    closeBox(src) -- a different box was open
 
     if type(serial) ~= 'string' or not serial:match('^%w+$') then
         -- first use: give the box its own serial number (this is what its contents are stored under)
@@ -410,16 +484,25 @@ RSGCore.Functions.CreateUseableItem(Config.Items.Box, function(source, item)
         MySQL.update('UPDATE `rsg_cards_boxes` SET `owner` = ? WHERE `serial` = ?', { citizenid, serial })
     end
 
-    -- rsg-inventory closes the inventory right after a `shouldClose` item is used,
-    -- so open the box once the use has finished or it would be closed again straight away
-    SetTimeout(Config.Storage.OpenDelay or 300, function()
-        if not RSGCore.Functions.GetPlayer(src) then return end
-        Inventory:OpenInventory(src, 'box_' .. serial, {
-            label = locale('box_label', serial),
-            maxweight = Config.Storage.MaxWeight,
-            slots = Config.Storage.MaxSlots,
-        })
+    SetTimeout(delay, function() openBox(src, serial) end)
+end)
+
+-- rsg-inventory has no item filter for stashes, so check the box after every move into it
+-- (a swap out of the box also puts the player's item in, so both directions count)
+RegisterNetEvent('rsg-inventory:server:move', function(data)
+    local src = source
+    local serial = openBoxes[src]
+    if not serial or type(data) ~= 'table' then return end
+    local stashId = 'box_' .. serial
+    if data.to ~= stashId and data.from ~= stashId then return end
+    SetTimeout(150, function()
+        if openBoxes[src] == serial then sweepBox(src, serial) end
     end)
+end)
+
+-- sent by the client when the inventory has been closed
+RegisterNetEvent('rsg-cards:server:boxClosed', function()
+    closeBox(source)
 end)
 
 ---------------------------------------------------------------------
@@ -428,6 +511,7 @@ end)
 AddEventHandler('playerDropped', function()
     local src = source
     local Player = RSGCore.Functions.GetPlayer(src)
+    closeBox(src)
     if Player then
         pickups[Player.PlayerData.citizenid] = nil
         finishPack(src)
@@ -441,4 +525,5 @@ end)
 AddEventHandler('onResourceStop', function(resourceName)
     if resourceName ~= GetCurrentResourceName() then return end
     for src in pairs(pendingPacks) do finishPack(src) end
+    for src in pairs(openBoxes) do closeBox(src) end
 end)
