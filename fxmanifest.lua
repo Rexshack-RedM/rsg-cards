@@ -24,6 +24,7 @@ server_scripts {
     'server/server.lua',
     'server/vendor.lua',
     'server/trades.lua',
+    'server/versionchecker.lua',
 }
 
 ui_page 'html/index.html'
