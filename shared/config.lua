@@ -109,6 +109,7 @@ Config.Card = {
 Config.Storage = {
     MaxWeight = 500,
     MaxSlots  = 81,
+    OpenDelay = 300, -- ms to wait after using the box before its storage opens (the inventory closes first)
 }
 
 -- Sounds (interact-sound). Skipped automatically if interact-sound isn't running.

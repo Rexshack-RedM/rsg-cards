@@ -410,11 +410,16 @@ RSGCore.Functions.CreateUseableItem(Config.Items.Box, function(source, item)
         MySQL.update('UPDATE `rsg_cards_boxes` SET `owner` = ? WHERE `serial` = ?', { citizenid, serial })
     end
 
-    Inventory:OpenInventory(src, 'box_' .. serial, {
-        label = locale('box_label', serial),
-        maxweight = Config.Storage.MaxWeight,
-        slots = Config.Storage.MaxSlots,
-    })
+    -- rsg-inventory closes the inventory right after a `shouldClose` item is used,
+    -- so open the box once the use has finished or it would be closed again straight away
+    SetTimeout(Config.Storage.OpenDelay or 300, function()
+        if not RSGCore.Functions.GetPlayer(src) then return end
+        Inventory:OpenInventory(src, 'box_' .. serial, {
+            label = locale('box_label', serial),
+            maxweight = Config.Storage.MaxWeight,
+            slots = Config.Storage.MaxSlots,
+        })
+    end)
 end)
 
 ---------------------------------------------------------------------

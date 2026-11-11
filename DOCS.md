@@ -246,6 +246,7 @@ With `Config.AutoDatabase = true` these are created on start, and a legacy `hdrp
 | No sound | interact-sound must be running and have the `dealfour` and `flip` sounds, or set `Config.Sounds.enabled = false` |
 | No world cards appear | They only spawn after the character has loaded, within `Config.DistanceSpawn`, and not while on cooldown |
 | Console: `database setup failed` | Check oxmysql, or set `Config.AutoDatabase = false` and import `install.sql` |
+| Using a storage box closes the inventory and nothing opens | The box opens `Config.Storage.OpenDelay` ms after use, once rsg-inventory has closed the inventory. Raise the delay if the box flashes open and shut |
 | Old boxes are empty after upgrading | The box table must be `rsg_cards_boxes` (auto-renamed from `hdrp_boxes`); stash ids are unchanged (`box_<serial>`) |
 | No Discord logs | Add a `rsg-cards` webhook to rsg-log |
 | Vendor has nothing to buy | Stock is `amount` in `Config.Shop.Items`; with persistent stock it only refills when rsg-inventory restocks |

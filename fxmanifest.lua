@@ -5,7 +5,7 @@ lua54 'yes'
 
 name 'rsg-cards'
 description 'Collectable cigarette cards for the RSG Framework'
-version '3.0.0'
+version '3.0.1'
 
 shared_scripts {
     '@rsg-core/shared/locale.lua',

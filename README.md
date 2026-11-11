@@ -68,7 +68,7 @@ Everything is in `shared/config.lua`.
 | `Config.Card.Cooldown` | `360` | Minutes before a character can collect the same card again |
 | `Config.Card.InspectTime` | `15000` | Longest time a card is held when inspected (ms) |
 | `Config.Card.EagleEye` | enabled, 50 m | Eagle Eye glow and heartbeat hint |
-| `Config.Storage` | 500 weight, 81 slots | Size of a storage box |
+| `Config.Storage` | 500 weight, 81 slots, 300 ms | Size of a storage box, and the delay before it opens after use |
 | `Config.Sounds` | enabled | interact-sound names for opening a pack / flipping a card |
 | `Config.Shop.Payment` | `cash` | Money type paid for sold cards (`cash` or `bloodmoney`) |
 | `Config.Shop.Items` | pack $5, box $50 | What vendors sell (`amount` = stock) |
