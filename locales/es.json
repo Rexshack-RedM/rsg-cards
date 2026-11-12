@@ -61,5 +61,8 @@
     "make_set": "Crear Colección",
     "set_pill": "Colección",
     "set_made": "Has completado: %s",
-    "set_missing": "No tienes todos los cromos de esta colección"
+    "set_missing": "No tienes todos los cromos de esta colección",
+    "bundle_sets": "Agrupar sets",
+    "bundle_done": "Se agruparon %s set(s) completos en tu caja de cartas",
+    "bundle_none": "No hay sets completos en esta caja. Un set necesita sus %s cartas."
 }

@@ -61,5 +61,8 @@
     "make_set": "Montar Coleção",
     "set_pill": "Coleção",
     "set_made": "Você montou: %s",
-    "set_missing": "Você não tem todos os cartões desta coleção"
+    "set_missing": "Você não tem todos os cartões desta coleção",
+    "bundle_sets": "Agrupar conjuntos",
+    "bundle_done": "%s conjunto(s) completo(s) agrupado(s) na sua caixa de cartas",
+    "bundle_none": "Não há conjuntos completos nesta caixa. Um conjunto precisa de todas as suas %s cartas."
 }

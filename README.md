@@ -2,7 +2,7 @@
 
 Collectable cigarette cards for the RSG Framework: 144 cards in 12 sets, found in the world, pulled from card packs, traded with collectors and sold to card vendors.
 
-**Version:** 3.0.2 · **Requires:** `rsg-core`, `rsg-inventory`, `rsg-target`, `oxmysql` · **Optional:** `interact-sound`, `rsg-log` · **ox_lib:** not required
+**Version:** 3.0.3 · **Requires:** `rsg-core`, `rsg-inventory` (3.2.0+ for the Bundle Sets button), `rsg-target`, `oxmysql` · **Optional:** `interact-sound`, `rsg-log` · **ox_lib:** not required
 
 > Server owners and developers: see **[DOCS.md](DOCS.md)** for the architecture, events, callbacks, security model and database schema.
 
@@ -15,7 +15,7 @@ Collectable cigarette cards for the RSG Framework: 144 cards in 12 sets, found i
 - **Card vendors** – buy packs and storage boxes, sell single cards, complete sets or everything at once
 - **Make sets** – a vendor spots when you hold all 12 cards of a set and turns them into the complete set
 - **Card collectors** – NPCs who swap a handful of cards from one set for the complete set. Requests rotate on a timer
-- **Storage box** – every box gets its own serial number and stash, opens beside your inventory, and only holds cards, sets and packs
+- **Storage box** – every box gets its own serial number and stash, opens beside your inventory, and only holds cards, sets and packs. A **Bundle Sets** button at the top of the box turns every complete run of 12 cards inside it into the complete set
 - **Inspect** – use a card from your inventory to hold it and turn it over
 - **Collection tracking** – the script remembers every card a character has ever found and announces a complete collection
 - Server-authoritative: every reward, price and cooldown is decided on the server
@@ -70,6 +70,7 @@ Everything is in `shared/config.lua`.
 | `Config.Card.InspectTime` | `15000` | Longest time a card is held when inspected (ms) |
 | `Config.Card.EagleEye` | enabled, 50 m | Eagle Eye glow and heartbeat hint |
 | `Config.Storage` | 500 weight, 81 slots, 300 ms | Size of a storage box, and the delay before it opens when the box item is `shouldClose = true` |
+| `Config.Storage.BundleSets` | `true` | Shows the **Bundle Sets** button on a box (needs rsg-inventory 3.2.0+) |
 | `Config.Storage.AllowedCategories` | `card`, `cardset`, `cardpack` | Item categories a box accepts. rsg-cards cards, sets and packs are always accepted; anything else is handed back |
 | `Config.Sounds` | enabled | interact-sound names for opening a pack / flipping a card |
 | `Config.Shop.Payment` | `cash` | Money type paid for sold cards (`cash` or `bloodmoney`) |
@@ -93,8 +94,9 @@ Card locations are in `shared/cards_points.lua` (`item` + `coords`).
 | Find a card | Walk up to a card in the world and target it (or press the prompt key). Use Eagle Eye to spot them |
 | Look at a card | Use the card from your inventory |
 | Store cards | Use `card_storage_box` to open it beside your inventory, then drag cards in. Use the box again to close just the box. The first use registers its serial number |
+| Bundle complete sets | Open your storage box and press **Bundle Sets** at the top. Every set you have all 12 cards of inside the box is combined into the complete set (duplicates make extra sets); spare cards stay as they are |
 | Sell cards and sets / buy packs | Talk to a card vendor |
-| Get a complete set | Collect all 12 cards of a set and press **Make Set** at a card vendor, or bring a card collector the cards they ask for |
+| Get a complete set | Collect all 12 cards of a set and press **Bundle Sets** on your storage box or **Make Set** at a card vendor, or bring a card collector the cards they ask for |
 
 ### Commands
 

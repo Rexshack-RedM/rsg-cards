@@ -61,5 +61,8 @@
     "make_set": "Créer la Série",
     "set_pill": "Série",
     "set_made": "Vous avez assemblé : %s",
-    "set_missing": "Vous n'avez pas toutes les cartes de cette série"
+    "set_missing": "Vous n'avez pas toutes les cartes de cette série",
+    "bundle_sets": "Regrouper les sets",
+    "bundle_done": "%s set(s) complet(s) regroupé(s) dans ta boîte à cartes",
+    "bundle_none": "Il n'y a aucun set complet dans cette boîte. Un set nécessite ses %s cartes."
 }

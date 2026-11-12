@@ -61,5 +61,8 @@
     "make_set": "Creează Setul",
     "set_pill": "Set",
     "set_made": "Ai completat: %s",
-    "set_missing": "Nu ai toate cartonașele din acest set"
+    "set_missing": "Nu ai toate cartonașele din acest set",
+    "bundle_sets": "Grupează seturile",
+    "bundle_done": "%s set(uri) complet(e) grupat(e) în cutia ta de cărți",
+    "bundle_none": "Nu există seturi complete în această cutie. Un set are nevoie de toate cele %s cărți."
 }

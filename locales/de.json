@@ -61,5 +61,8 @@
     "make_set": "Set erstellen",
     "set_pill": "Set",
     "set_made": "Du hast das %s zusammengestellt",
-    "set_missing": "Du hast nicht alle Karten dieses Sets"
+    "set_missing": "Du hast nicht alle Karten dieses Sets",
+    "bundle_sets": "Sets bündeln",
+    "bundle_done": "%s vollständige(s) Set(s) in deiner Kartenbox gebündelt",
+    "bundle_none": "In dieser Box sind keine vollständigen Sets. Ein Set braucht alle %s Karten."
 }

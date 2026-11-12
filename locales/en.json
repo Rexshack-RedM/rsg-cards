@@ -61,5 +61,8 @@
     "make_set": "Make Set",
     "set_pill": "Set",
     "set_made": "You put together the %s",
-    "set_missing": "You don't have every card of this set"
+    "set_missing": "You don't have every card of this set",
+    "bundle_sets": "Bundle Sets",
+    "bundle_done": "Bundled %s complete set(s) in your card box",
+    "bundle_none": "There are no complete sets in this box. A set needs all %s of its cards."
 }

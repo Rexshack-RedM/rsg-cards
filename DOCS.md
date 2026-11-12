@@ -87,6 +87,7 @@ One entry per card; the item name is also the cooldown key, so don't list the sa
 Stash id `box_<serial>`, opened with `exports['rsg-inventory']:OpenInventory`. Contents are stored by rsg-inventory.
 
 - **Open / close:** using the box opens it beside the player inventory. Using the same box again while it is open calls `OpenInventory(src)` with no stash, which removes the box panel and leaves the inventory open.
+- **Bundle Sets:** with `Config.Storage.BundleSets = true` the box is opened with `actions = { { id = 'bundle_sets', label = locale('bundle_sets') } }`, which rsg-inventory (3.2.0+) shows as a button under the box name. A click arrives as the local server event `rsg-inventory:stashAction (src, stashId, actionId)`. rsg-cards then counts the single cards in the box and, for each set, removes `n` of every card (`n` = the lowest count of any card in that set) and adds `n` complete-set items to the box. If the set can't be stored in the box it goes to the player, then to the ground; if a removal fails the cards already taken are put back. Only cards inside the box count, not the ones in the satchel. On an older rsg-inventory the `actions` option is ignored and the button simply doesn't appear.
 - **Card-only rule:** rsg-inventory has no per-stash item filter, so rsg-cards checks the box itself: when it opens, after every move in or out of it (it listens to `rsg-inventory:server:move`), and when the inventory closes. Anything that is not a rsg-cards card, set or pack, and whose `category` is not in `Config.Storage.AllowedCategories`, is removed from the box and given back to the player, or dropped at their feet if they can't carry it.
 
 ## Exports
@@ -121,6 +122,12 @@ Card data: `{ item, label, image, tier, deck, isNew, collected, total }`.
 | `rsg-cards:server:openShop` | `shopId` | Opens the rsg-inventory shop (distance checked) |
 | `rsg-cards:server:boxClosed` | – | Inventory closed: checks the box contents one last time |
 | `rsg-inventory:server:move` | – | Also handled here (read-only) to check the open box after a move |
+
+### Server local events (not net events)
+
+| Name | Arguments | Purpose |
+|---|---|---|
+| `rsg-inventory:stashAction` | `src, stashId, actionId` | Sent by rsg-inventory when a stash header button is clicked. rsg-cards acts on `actionId = 'bundle_sets'` for the box that player has open |
 
 ### Client events
 
@@ -186,6 +193,7 @@ What the script enforces:
 - World pickups have a per-character cooldown, set before the card is given.
 - `CanAddItem` is checked before items are given; a failed removal aborts and refunds a trade.
 - All SQL uses `?` parameters. Box serials are validated (`%w+`) before being used in a stash id.
+- Bundle Sets: the click carries no data from the client. rsg-inventory only passes it on for a button registered on the stash the player has open; rsg-cards then checks it is that player's open box, rate limits it (2 s) and works out the sets from the box contents on the server.
 - `/refreshcardtrades` requires the `admin` permission.
 
 What you must look after:
@@ -233,6 +241,8 @@ With `Config.AutoDatabase = true` these are created on start, and a legacy `hdrp
 
 **Turn off set making at vendors** – `Config.Shop.CraftSets = false`.
 
+**Turn off the Bundle Sets button on boxes** – `Config.Storage.BundleSets = false`.
+
 **Move or add a vendor / collector** – add an entry to `Config.Shop.Locations` or `Config.Trades.Locations` with a unique `id`, `coords`, `npcmodel` and `npccoords`.
 
 **Move or add a world card** – edit `shared/cards_points.lua`. `card_cigcard_grl_c1` has no world location in the shipped data; add one if you want it findable outside packs.
@@ -257,6 +267,8 @@ With `Config.AutoDatabase = true` these are created on start, and a legacy `hdrp
 | No sound | interact-sound must be running and have the `dealfour` and `flip` sounds, or set `Config.Sounds.enabled = false` |
 | No world cards appear | They only spawn after the character has loaded, within `Config.DistanceSpawn`, and not while on cooldown |
 | Console: `database setup failed` | Check oxmysql, or set `Config.AutoDatabase = false` and import `install.sql` |
+| No **Bundle Sets** button on the box | Update rsg-inventory to 3.2.0 or newer and check `Config.Storage.BundleSets = true` |
+| Bundle Sets says there are no complete sets | All 12 cards of a set must be inside the box (cards in the satchel don't count) |
 | Items jump back out of a storage box | Only cards, sets, packs and `Config.Storage.AllowedCategories` are allowed |
 | The inventory flickers when the box is used | Set the box item to `shouldClose = false` in rsg-core items |
 | Using a storage box closes the inventory and nothing opens | The box opens `Config.Storage.OpenDelay` ms after use, once rsg-inventory has closed the inventory. Raise the delay if the box flashes open and shut |

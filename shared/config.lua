@@ -112,6 +112,10 @@ Config.Storage = {
     MaxSlots  = 81,
     OpenDelay = 300, -- ms to wait before the box opens when the box item is `shouldClose = true` (the inventory closes first)
 
+    -- Shows a "Bundle Sets" button at the top of the box. It turns every complete run of cards
+    -- inside the box into the complete-set item (needs rsg-inventory 3.2.0 or newer).
+    BundleSets = true,
+
     -- Only these item categories (the `category` field in rsg-core shared items) can be kept in a box.
     -- Every rsg-cards card, set and pack is always allowed, even if its category is missing.
     -- Anything else put in a box is handed straight back to the player.

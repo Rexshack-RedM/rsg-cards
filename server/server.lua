@@ -425,6 +425,8 @@ local function closeBox(src)
     sweepBox(src, serial)
 end
 
+local BUNDLE_ACTION = 'bundle_sets' -- id of the button rsg-inventory shows at the top of the box
+
 local function openBox(src, serial)
     if not RSGCore.Functions.GetPlayer(src) then return end
     sweepBox(src, serial) -- clears out anything stored before the card-only rule
@@ -432,6 +434,8 @@ local function openBox(src, serial)
         label = locale('box_label', serial),
         maxweight = Config.Storage.MaxWeight,
         slots = Config.Storage.MaxSlots,
+        -- false removes the button from a box that was opened before the option was turned off
+        actions = Config.Storage.BundleSets and { { id = BUNDLE_ACTION, label = locale('bundle_sets') } } or false,
     })
     if opened then
         openBoxes[src] = serial
@@ -485,6 +489,81 @@ RSGCore.Functions.CreateUseableItem(Config.Items.Box, function(source, item)
     end
 
     SetTimeout(delay, function() openBox(src, serial) end)
+end)
+
+-- Turns every complete run of cards inside the box into the complete-set item (kept in the box).
+local function bundleSets(src, serial)
+    local Player = RSGCore.Functions.GetPlayer(src)
+    if not Player then return end
+    local stashId = 'box_' .. serial
+    local ok, stash = pcall(function() return Inventory:GetInventory(stashId) end)
+    if not ok or type(stash) ~= 'table' or type(stash.items) ~= 'table' then return end
+
+    local counts = {}
+    for _, item in pairs(stash.items) do
+        local info = type(item) == 'table' and item.name and Cards.Info[item.name]
+        if info and not info.deck then
+            counts[item.name] = (counts[item.name] or 0) + (tonumber(item.amount) or 0)
+        end
+    end
+
+    local total, made = 0, {}
+    for _, set in ipairs(Config.Sets) do
+        -- how many complete sets these cards make = the lowest count of any one card
+        local cards, times = {}, nil
+        for number = 1, Config.CardsPerSet do
+            cards[number] = ('card_cigcard_%s_c%d'):format(set.id, number)
+            local have = counts[cards[number]] or 0
+            times = times and math.min(times, have) or have
+        end
+
+        local deck = ('card_cigcard_%s'):format(set.id)
+        if times and times > 0 and Cards.Info[deck] then
+            local removed, complete = {}, true
+            for _, name in ipairs(cards) do
+                if Inventory:RemoveItem(stashId, name, times, nil, 'rsg-cards:bundle-set') then
+                    removed[#removed + 1] = name
+                else
+                    complete = false
+                    break
+                end
+            end
+
+            -- the set goes into the box; if that somehow fails, to the player, then to their feet
+            local stored = complete and (
+                Inventory:AddItem(stashId, deck, times, nil, nil, 'rsg-cards:bundle-set')
+                or (Inventory:CanAddItem(src, deck, times) and Inventory:AddItem(src, deck, times, nil, nil, 'rsg-cards:bundle-set'))
+                or Inventory:ForceDropItem(src, deck, times, nil, 'rsg-cards:bundle-set'))
+
+            if stored then
+                total = total + times
+                made[#made + 1] = ('%dx %s'):format(times, deck)
+            else
+                -- nothing was made: put back the cards that were already taken
+                for _, name in ipairs(removed) do
+                    Inventory:AddItem(stashId, name, times, nil, nil, 'rsg-cards:bundle-refund')
+                end
+            end
+        end
+    end
+
+    if total < 1 then
+        return CardsServer.notify(src, locale('bundle_none', Config.CardsPerSet), 'error')
+    end
+    Inventory:SaveStash(stashId)
+    CardsServer.notify(src, locale('bundle_done', total), 'success')
+    CardsServer.log(('**Sets bundled**\n%s\nBox: %s\n%s'):format(CardsServer.playerTag(Player), serial, table.concat(made, ', ')))
+end
+
+-- "Bundle Sets" button on the box (local event from rsg-inventory, which only sends it for a
+-- button registered on the stash the player has open)
+AddEventHandler('rsg-inventory:stashAction', function(src, stashId, actionId)
+    if actionId ~= BUNDLE_ACTION or not Config.Storage.BundleSets then return end
+    src = tonumber(src)
+    local serial = src and openBoxes[src]
+    if not serial or stashId ~= 'box_' .. serial then return end
+    if not CardsServer.throttle(src, 'bundle', 2) then return end
+    bundleSets(src, serial)
 end)
 
 -- rsg-inventory has no item filter for stashes, so check the box after every move into it
