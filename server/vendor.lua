@@ -3,6 +3,11 @@ local Inventory = exports['rsg-inventory']
 
 local SHOP_NAME = 'cardcollect'
 
+-- what the vendor can see: card boxes only (Config.Shop.BoxesOnly) or inventory + card boxes
+local function scope()
+    return Config.Shop.BoxesOnly and 'boxes' or true
+end
+
 local function getLocation(src, id)
     for _, location in ipairs(Config.Shop.Locations) do
         if location.id == id then
@@ -11,10 +16,10 @@ local function getLocation(src, id)
     end
 end
 
--- everything the player carries that the vendor buys, in set order
-local function sellableItems(src)
+-- everything the player carries (inventory and card boxes) that the vendor buys, in set order
+local function sellableItems(counts)
     local list = {}
-    for name, amount in pairs(CardsServer.countCards(src)) do
+    for name, amount in pairs(counts) do
         if amount > 0 then
             local info = Cards.Info[name]
             list[#list + 1] = {
@@ -32,11 +37,10 @@ local function sellableItems(src)
     return list
 end
 
--- sets the player holds every card of
-local function craftableSets(src)
+-- sets the player holds every card of (inventory + card boxes)
+local function craftableSets(counts)
     local list = {}
     if not Config.Shop.CraftSets then return list end
-    local counts = CardsServer.countCards(src)
     for _, set in ipairs(Config.Sets) do
         local times = math.huge
         for number = 1, Config.CardsPerSet do
@@ -58,7 +62,14 @@ local function craftableSets(src)
 end
 
 local function vendorData(src, message, notifyType)
-    return { items = sellableItems(src), sets = craftableSets(src), message = message, type = notifyType }
+    local counts = CardsServer.countCards(src, scope()) -- read once: inventory and boxes are only scanned one time per update
+    return {
+        items = sellableItems(counts),
+        sets = craftableSets(counts),
+        boxesOnly = Config.Shop.BoxesOnly == true,
+        message = message,
+        type = notifyType,
+    }
 end
 
 local function pay(Player, total, reason)
@@ -67,6 +78,7 @@ end
 
 RSGCore.Functions.CreateCallback('rsg-cards:server:getVendor', function(source, cb, shopId)
     if not RSGCore.Functions.GetPlayer(source) or not getLocation(source, shopId) then return cb(false) end
+    if not CardsServer.throttle(source, 'getVendor', 0.5) then return cb(false) end
     cb(vendorData(source))
 end)
 
@@ -81,8 +93,8 @@ RSGCore.Functions.CreateCallback('rsg-cards:server:sell', function(source, cb, s
     if not info or not amount or amount < 1 or amount ~= math.floor(amount) then return cb(false) end
     amount = math.floor(amount)
 
-    local owned = CardsServer.countCards(src)[name] or 0
-    if amount > owned or not Inventory:RemoveItem(src, name, amount, nil, 'rsg-cards:sell') then
+    local owned = CardsServer.countCards(src, scope())[name] or 0
+    if amount > owned or not CardsServer.removeCards(src, name, amount, 'rsg-cards:sell', scope()) then
         return cb(vendorData(src, locale('sell_not_enough'), 'error'))
     end
 
@@ -100,8 +112,8 @@ RSGCore.Functions.CreateCallback('rsg-cards:server:sellAll', function(source, cb
     if not CardsServer.throttle(src, 'sell', 1) then return cb(false) end
 
     local total, sold = 0, 0
-    for name, amount in pairs(CardsServer.countCards(src)) do
-        if amount > 0 and Inventory:RemoveItem(src, name, amount, nil, 'rsg-cards:sell-all') then
+    for name, amount in pairs(CardsServer.countCards(src, scope())) do
+        if amount > 0 and CardsServer.removeCards(src, name, amount, 'rsg-cards:sell-all', scope()) then
             total = total + Cards.Info[name].price * amount
             sold = sold + amount
         end
@@ -131,7 +143,7 @@ RSGCore.Functions.CreateCallback('rsg-cards:server:makeSet', function(source, cb
     local info = deck and Cards.Info[deck]
     if not info or not info.deck then return cb(false) end
 
-    local cards, counts = {}, CardsServer.countCards(src)
+    local cards, counts = {}, CardsServer.countCards(src, scope())
     for number = 1, Config.CardsPerSet do
         cards[number] = ('card_cigcard_%s_c%d'):format(setId, number)
         if (counts[cards[number]] or 0) < 1 then
@@ -145,7 +157,7 @@ RSGCore.Functions.CreateCallback('rsg-cards:server:makeSet', function(source, cb
 
     local removed = {}
     for _, name in ipairs(cards) do
-        if Inventory:RemoveItem(src, name, 1, nil, 'rsg-cards:make-set') then
+        if CardsServer.removeCards(src, name, 1, 'rsg-cards:make-set', scope()) then
             removed[#removed + 1] = name
         else
             -- something changed mid-way: hand back what was already taken

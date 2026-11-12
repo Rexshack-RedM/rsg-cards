@@ -64,5 +64,8 @@
     "set_missing": "You don't have every card of this set",
     "bundle_sets": "Bundle Sets",
     "bundle_done": "Bundled %s complete set(s) in your card box",
-    "bundle_none": "There are no complete sets in this box. A set needs all %s of its cards."
+    "bundle_none": "There are no complete sets in this box. A set needs all %s of its cards.",
+    "vendor_empty_boxes": "The vendor only buys cards kept in a card box that you are carrying",
+    "trade_done": "You already completed this request",
+    "trade_completed": "Completed"
 }

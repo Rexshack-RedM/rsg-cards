@@ -3,6 +3,7 @@ local Inventory = exports['rsg-inventory']
 
 local offers = {}   -- [locationId] = { { id, set, reward, amount, cards = { itemName, ... } }, ... }
 local lastSets = {} -- [locationId] = { [setId] = true } sets offered in the previous rotation
+local traded = {}    -- [citizenid] = { [locationId|offerId] = true } offers a player already completed this rotation
 local rotation = 0
 local nextRefresh = 0
 
@@ -16,6 +17,7 @@ end
 
 local function rotateOffers()
     rotation = rotation + 1
+    traded = {}
     nextRefresh = os.time() + Config.Trades.Refresh * 60
 
     local minCards = math.max(1, math.min(Config.Trades.MinCards, Config.CardsPerSet))
@@ -79,9 +81,19 @@ local function getLocation(src, id)
     end
 end
 
+local function tradeKey(locationId, offerId)
+    return locationId .. '|' .. offerId
+end
+
+local function hasTraded(citizenid, locationId, offerId)
+    return Config.Trades.OncePerPlayer and traded[citizenid] ~= nil and traded[citizenid][tradeKey(locationId, offerId)] == true
+end
+
 -- offers of one collector, with how many of each card the player carries
 local function buildOffers(src, locationId)
     local counts = CardsServer.countCards(src)
+    local Player = RSGCore.Functions.GetPlayer(src)
+    local citizenid = Player and Player.PlayerData.citizenid
     local list = {}
     for _, offer in ipairs(offers[locationId] or {}) do
         local cards, have = {}, 0
@@ -103,6 +115,7 @@ local function buildOffers(src, locationId)
             cards = cards,
             have = have,
             need = #cards,
+            done = citizenid ~= nil and hasTraded(citizenid, locationId, offer.id),
         }
     end
     return { offers = list, refresh = math.max(0, nextRefresh - os.time()) }
@@ -110,6 +123,7 @@ end
 
 RSGCore.Functions.CreateCallback('rsg-cards:server:getTrades', function(source, cb, locationId)
     if not RSGCore.Functions.GetPlayer(source) or not getLocation(source, locationId) then return cb(false) end
+    if not CardsServer.throttle(source, 'getTrades', 0.5) then return cb(false) end
     cb(buildOffers(source, locationId))
 end)
 
@@ -131,6 +145,9 @@ RSGCore.Functions.CreateCallback('rsg-cards:server:trade', function(source, cb, 
     end
 
     if not offer then return reply(locale('trade_expired'), 'error') end
+
+    local citizenid = Player.PlayerData.citizenid
+    if hasTraded(citizenid, locationId, offer.id) then return reply(locale('trade_done'), 'error') end
 
     local counts = CardsServer.countCards(src)
     for _, name in ipairs(offer.cards) do
@@ -154,7 +171,18 @@ RSGCore.Functions.CreateCallback('rsg-cards:server:trade', function(source, cb, 
         end
     end
 
-    Inventory:AddItem(src, offer.reward, offer.amount, nil, nil, 'rsg-cards:trade')
+    if not Inventory:AddItem(src, offer.reward, offer.amount, nil, nil, 'rsg-cards:trade') then
+        -- could not hand over the reward: give the cards back
+        for _, name in ipairs(removed) do
+            Inventory:AddItem(src, name, 1, nil, nil, 'rsg-cards:trade-refund')
+        end
+        return reply(locale('inventory_full'), 'error')
+    end
+
+    if Config.Trades.OncePerPlayer then
+        traded[citizenid] = traded[citizenid] or {}
+        traded[citizenid][tradeKey(locationId, offer.id)] = true
+    end
     CardsServer.log(('**Cards traded**\n%s\n%d cards for %dx %s'):format(
         CardsServer.playerTag(Player), #offer.cards, offer.amount, offer.reward))
 

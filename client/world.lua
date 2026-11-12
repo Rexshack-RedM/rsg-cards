@@ -2,11 +2,12 @@ local RSGCore = exports['rsg-core']:GetCoreObject()
 
 local BLIP_STYLE = 1664425300 -- default coords blip style
 
-local npcs = {}         -- every vendor / collector: { id, kind, coords, npcmodel, npccoords, label, event, key }
+local npcs = {}         -- every vendor / collector: { id, coords, npcmodel, npccoords, label, event, key, icon, blip }
 local spawnedPeds = {}  -- [npc index] = ped
 local spawnedCards = {} -- [card point index] = prop
 local cardReadyAt = {}  -- [itemName] = GetGameTimer() value at which the card can be collected again
 local blips = {}
+local fadingOut = {}   -- [entity] = true while an entity fades out before it is deleted
 local prompts = {}      -- rsg-core prompt names
 local collecting = false
 local loggedIn = false
@@ -26,18 +27,31 @@ local function loadModel(model)
     return hash
 end
 
-local function fade(entity, fadeIn)
-    if not Config.FadeIn then
-        if fadeIn then SetEntityAlpha(entity, 255, false) end
-        return
-    end
-    local from, to, step = 0, 255, 51
-    if not fadeIn then from, to, step = 255, 0, -51 end
-    for alpha = from, to, step do
-        if not DoesEntityExist(entity) then return end
-        SetEntityAlpha(entity, alpha, false)
-        Wait(50)
-    end
+-- fades an entity in or out in its own thread so the spawn loop never stalls; `after` runs when done
+local function fade(entity, fadeIn, after)
+    CreateThread(function()
+        if Config.FadeIn then
+            local from, to, step = 0, 255, 51
+            if not fadeIn then from, to, step = 255, 0, -51 end
+            for alpha = from, to, step do
+                if not DoesEntityExist(entity) then break end
+                SetEntityAlpha(entity, alpha, false)
+                Wait(50)
+            end
+        elseif fadeIn and DoesEntityExist(entity) then
+            SetEntityAlpha(entity, 255, false)
+        end
+        if after then after() end
+    end)
+end
+
+-- fades an entity out, then deletes it (own thread, so the spawn loop never stalls)
+local function fadeOutAndDelete(entity)
+    fadingOut[entity] = true
+    fade(entity, false, function()
+        if DoesEntityExist(entity) then DeleteEntity(entity) end
+        fadingOut[entity] = nil
+    end)
 end
 
 local function addBlip(coords, sprite, scale, name)
@@ -126,8 +140,8 @@ local function removeNpc(index, instant)
     spawnedPeds[index] = nil
     if not DoesEntityExist(ped) then return end
     if Config.EnableTarget then exports['rsg-target']:removeLocalEntity(ped) end
-    if not instant then fade(ped, false) end
-    DeleteEntity(ped)
+    if instant or not Config.FadeIn then return DeleteEntity(ped) end
+    fadeOutAndDelete(ped)
 end
 
 -- blips and prompts are created once
@@ -164,6 +178,11 @@ end)
 ---------------------------------------------------------------------
 -- CARDS IN THE WORLD
 ---------------------------------------------------------------------
+local cardCoords = {} -- [card point index] = vector3, built once so the distance loop doesn't allocate
+for index, point in ipairs(Config.CardPoints) do
+    cardCoords[index] = vector3(point.coords.x, point.coords.y, point.coords.z)
+end
+
 local function isCardReady(item)
     local readyAt = cardReadyAt[item]
     return not readyAt or GetGameTimer() >= readyAt
@@ -176,8 +195,8 @@ local function removeCard(index, instant)
     removePrompt('rsg-cards:card:' .. index)
     if not DoesEntityExist(prop) then return end
     if Config.EnableTarget then exports['rsg-target']:removeLocalEntity(prop) end
-    if not instant then fade(prop, false) end
-    DeleteEntity(prop)
+    if instant or not Config.FadeIn then return DeleteEntity(prop) end
+    fadeOutAndDelete(prop)
 end
 
 local function collectCard(index)
@@ -273,7 +292,7 @@ CreateThread(function()
             local closest = math.huge
 
             for index, point in ipairs(Config.CardPoints) do
-                local distance = #(playerCoords - vector3(point.coords.x, point.coords.y, point.coords.z))
+                local distance = #(playerCoords - cardCoords[index])
                 local ready = isCardReady(point.item)
                 if ready and distance < closest then closest = distance end
 
@@ -326,6 +345,7 @@ AddEventHandler('onResourceStop', function(resourceName)
     if resourceName ~= GetCurrentResourceName() then return end
     clearCards()
     for index in pairs(spawnedPeds) do removeNpc(index, true) end
+    for entity in pairs(fadingOut) do if DoesEntityExist(entity) then DeleteEntity(entity) end end
     for name in pairs(prompts) do removePrompt(name) end
     for _, blip in ipairs(blips) do RemoveBlip(blip) end
 end)

@@ -64,5 +64,8 @@
     "set_missing": "No tienes todos los cromos de esta colección",
     "bundle_sets": "Agrupar sets",
     "bundle_done": "Se agruparon %s set(s) completos en tu caja de cartas",
-    "bundle_none": "No hay sets completos en esta caja. Un set necesita sus %s cartas."
+    "bundle_none": "No hay sets completos en esta caja. Un set necesita sus %s cartas.",
+    "vendor_empty_boxes": "El vendedor solo compra cartas guardadas en una caja de cartas que lleves contigo",
+    "trade_done": "Ya completaste esta solicitud",
+    "trade_completed": "Completado"
 }

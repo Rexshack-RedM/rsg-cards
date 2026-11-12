@@ -105,12 +105,12 @@ Other resources normally don't need these. They are listed so you know what each
 | `rsg-cards:server:flipCard` | `index` | card data or `false` | Player has an open pack, index valid and not flipped yet |
 | `rsg-cards:server:getPickups` | – | `{ [item] = secondsLeft }` | – |
 | `rsg-cards:server:pickupCard` | `pointIndex` | card data + `cooldown`, `{ cooldown }` or `false` | Distance to the point, per-character cooldown, rate limit, inventory space |
-| `rsg-cards:server:getVendor` | `shopId` | `{ items, sets }` or `false` | Distance to the vendor. `sets` = sets the player holds all 12 cards of |
+| `rsg-cards:server:getVendor` | `shopId` | `{ items, sets, boxesOnly }` or `false` | Distance to the vendor, rate limit (0.5 s). `sets` = sets the player holds all 12 cards of; `boxesOnly` mirrors `Config.Shop.BoxesOnly` (the UI uses it to explain an empty list) |
 | `rsg-cards:server:sell` | `shopId, item, amount` | `{ message, type, items, sets }` or `false` | Distance, item is a card, whole amount ≥ 1 and owned, rate limit. Price from `Config.Sets` |
 | `rsg-cards:server:sellAll` | `shopId` | `{ message, type, items, sets }` or `false` | Distance, rate limit. Only cards and sets are sold |
 | `rsg-cards:server:makeSet` | `shopId, setId` | `{ message, type, items, sets }` or `false` | Distance, `Config.Shop.CraftSets`, set exists, all 12 cards owned, inventory space, rate limit. A failed removal refunds |
-| `rsg-cards:server:getTrades` | `locationId` | `{ offers, refresh }` or `false` | Distance to the collector |
-| `rsg-cards:server:trade` | `locationId, offerId` | `{ message, type, offers, refresh }` or `false` | Distance, request still active, every card owned, inventory space, rate limit |
+| `rsg-cards:server:getTrades` | `locationId` | `{ offers, refresh }` or `false` | Distance to the collector, rate limit (0.5 s). Each offer has `done = true` when the player already completed it |
+| `rsg-cards:server:trade` | `locationId, offerId` | `{ message, type, offers, refresh }` or `false` | Distance, request still active, not already completed by this player (`Config.Trades.OncePerPlayer`), every card owned, inventory space, rate limit. A failed removal or reward refunds the cards |
 
 Card data: `{ item, label, image, tier, deck, isNew, collected, total }`.
 
@@ -176,7 +176,7 @@ local found = MySQL.scalar.await('SELECT COUNT(*) FROM rsg_cards_collection WHER
 | Cards a character has ever found | `rsg_cards_collection` | Written when a single card is given by a pack or a pickup |
 | World card cooldowns | `rsg_cards_pickups` | Unix time of the last pickup per character and card. Cached in memory while the player is online |
 | Storage box registry | `rsg_cards_boxes` | Serial, creator, last user. Box contents live in rsg-inventory's stash storage |
-| Collector requests | memory | Regenerated on resource start and every `Config.Trades.Refresh` minutes |
+| Collector requests | memory | Regenerated on resource start and every `Config.Trades.Refresh` minutes. Who completed which request is kept in memory until the next refresh |
 | Open packs | memory | Cards not yet turned over are given when the UI closes, the player leaves, or the resource stops |
 | Vendor stock | rsg-inventory | Persistent when `Config.Shop.PersistStock = true` |
 
@@ -189,7 +189,8 @@ What the script enforces:
 - Location actions (pickup, vendor, shop, collector) are distance-checked against the server's own coordinates for the player.
 - Amounts are checked for type, whole numbers, range and ownership. Only items in `Cards.Info` can be sold or traded.
 - Sell prices and trade contents come from server config / server memory.
-- Reward and sale callbacks are rate limited per player.
+- Reward, sale and vendor/collector callbacks are rate limited per player (millisecond precision).
+- Collector requests can only be completed once per player (`Config.Trades.OncePerPlayer`); completed requests are remembered in memory until the requests refresh. Without this a player could trade the same few cheap cards for a set worth up to $60 over and over.
 - World pickups have a per-character cooldown, set before the card is given.
 - `CanAddItem` is checked before items are given; a failed removal aborts and refunds a trade.
 - All SQL uses `?` parameters. Box serials are validated (`%w+`) before being used in a stash id.
@@ -241,6 +242,8 @@ With `Config.AutoDatabase = true` these are created on start, and a legacy `hdrp
 
 **Turn off set making at vendors** – `Config.Shop.CraftSets = false`.
 
+**Let vendors use loose cards too** – `Config.Shop.BoxesOnly = false` (default `true`: vendors only look in the player's card boxes).
+
 **Turn off the Bundle Sets button on boxes** – `Config.Storage.BundleSets = false`.
 
 **Move or add a vendor / collector** – add an entry to `Config.Shop.Locations` or `Config.Trades.Locations` with a unique `id`, `coords`, `npcmodel` and `npccoords`.
@@ -254,6 +257,10 @@ With `Config.AutoDatabase = true` these are created on start, and a legacy `hdrp
 **Use prompts instead of targeting** – `Config.EnableTarget = false`. Keys are `Config.Card.Key`, `Config.Shop.Key`, `Config.Trades.Key`.
 
 **Turn off voice passthrough** – `Config.AllowPushToTalkWhileOpen = false`.
+
+**Allow repeat trades with collectors** – `Config.Trades.OncePerPlayer = false` (check your set prices first).
+
+**Turn off the update check** – `Config.VersionCheck = false`.
 
 ## Troubleshooting
 
@@ -274,6 +281,18 @@ With `Config.AutoDatabase = true` these are created on start, and a legacy `hdrp
 | Using a storage box closes the inventory and nothing opens | The box opens `Config.Storage.OpenDelay` ms after use, once rsg-inventory has closed the inventory. Raise the delay if the box flashes open and shut |
 | Old boxes are empty after upgrading | The box table must be `rsg_cards_boxes` (auto-renamed from `hdrp_boxes`); stash ids are unchanged (`box_<serial>`) |
 | No Discord logs | Add a `rsg-cards` webhook to rsg-log |
+| Vendor says it only buys cards from a card box | `Config.Shop.BoxesOnly = true` (default): put cards in a card box and carry the box. Set it to `false` to also buy loose cards from the inventory |
+| Collector request shows *Completed* | The player already did it; new requests arrive every `Config.Trades.Refresh` minutes or with `/refreshcardtrades` |
 | Vendor has nothing to buy | Stock is `amount` in `Config.Shop.Items`; with persistent stock it only refills when rsg-inventory restocks |
 
 Support: https://buymeacoffee.com/rexshack
+
+
+## Vendor and card boxes
+
+Vendors (`server/vendor.lua`) work on everything the player carries: the inventory **and** every card storage box in it (stash `box_<serial>`).
+
+- `CardsServer.countCards(src, scope)` returns `{ [itemName] = amount }`. `scope` is nil (inventory only, used by trades), `true` (inventory + boxes) or `'boxes'` (boxes only). Vendors use `'boxes'` when `Config.Shop.BoxesOnly = true`, otherwise `true`.
+- `CardsServer.getBoxIds(src)` returns the stash ids of the boxes the player carries (only boxes that have been registered, i.e. have a serial).
+- `CardsServer.removeCards(src, name, amount, reason, scope)` removes from the inventory first, then from the boxes (`scope = 'boxes'` skips the inventory). It is all-or-nothing: if any step fails the cards already taken are handed back. Box stashes that were changed are saved.
+- Make Set removes cards 1-12 (from inventory/boxes) and gives one complete-set item to the inventory. Sell and Sell All pay `cardPrice` per card and `deckPrice` per set from `Config.Sets`.

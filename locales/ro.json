@@ -64,5 +64,8 @@
     "set_missing": "Nu ai toate cartonașele din acest set",
     "bundle_sets": "Grupează seturile",
     "bundle_done": "%s set(uri) complet(e) grupat(e) în cutia ta de cărți",
-    "bundle_none": "Nu există seturi complete în această cutie. Un set are nevoie de toate cele %s cărți."
+    "bundle_none": "Nu există seturi complete în această cutie. Un set are nevoie de toate cele %s cărți.",
+    "vendor_empty_boxes": "Vânzătorul cumpără doar cărți păstrate într-o cutie de cărți pe care o porți la tine",
+    "trade_done": "Ai finalizat deja această cerere",
+    "trade_completed": "Finalizat"
 }

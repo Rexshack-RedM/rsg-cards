@@ -5,9 +5,10 @@ local Inventory = exports['rsg-inventory']
 CardsServer = {}
 
 local dbReady = false
-local throttles = {}    -- [src] = { [key] = os.time() }
+local throttles = {}    -- [src] = { [key] = GetGameTimer() }
 local pendingPacks = {} -- [src] = { cards = { itemName, ... }, revealed = { [index] = true }, left = number }
 local pickups = {}      -- [citizenid] = { [itemName] = os.time() of the last pickup }
+local pickupOwner = {} -- [src] = citizenid whose pickups are cached (the player may already be gone when they drop)
 
 ---------------------------------------------------------------------
 -- HELPERS
@@ -38,10 +39,10 @@ end
 
 -- returns true when the action is allowed (at most once every `seconds` per player)
 function CardsServer.throttle(src, key, seconds)
-    local now = os.time()
+    local now = GetGameTimer()
     throttles[src] = throttles[src] or {}
     local last = throttles[src][key]
-    if last and now - last < seconds then return false end
+    if last and now - last < seconds * 1000 then return false end
     throttles[src][key] = now
     return true
 end
@@ -60,17 +61,98 @@ function CardsServer.round(value)
     return math.floor(value * 100 + 0.5) / 100
 end
 
--- { [itemName] = amount } of every card / set the player carries
-function CardsServer.countCards(src)
+-- stash ids ('box_<serial>') of every card storage box the player carries
+function CardsServer.getBoxIds(src)
+    local Player = RSGCore.Functions.GetPlayer(src)
+    local ids, seen = {}, {}
+    if not Player then return ids end
+    for _, item in pairs(Player.PlayerData.items or {}) do
+        if item and item.name == Config.Items.Box and type(item.info) == 'table' then
+            local serial = item.info.serie
+            if type(serial) == 'string' and serial:match('^%w+$') and not seen[serial] then
+                seen[serial] = true
+                ids[#ids + 1] = 'box_' .. serial
+            end
+        end
+    end
+    return ids
+end
+
+-- items of a box stash, or nil when rsg-inventory can't give them
+local function getStashItems(stashId)
+    local ok, stash = pcall(function() return Inventory:GetInventory(stashId) end)
+    if ok and type(stash) == 'table' and type(stash.items) == 'table' then return stash.items end
+    return nil
+end
+
+-- { [itemName] = amount } of every card / set the player carries.
+-- scope: nil/false = inventory only, true = inventory + card boxes, 'boxes' = card boxes only
+function CardsServer.countCards(src, scope)
     local Player = RSGCore.Functions.GetPlayer(src)
     local counts = {}
     if not Player then return counts end
-    for _, item in pairs(Player.PlayerData.items or {}) do
-        if item and Cards.Info[item.name] then
-            counts[item.name] = (counts[item.name] or 0) + (tonumber(item.amount) or 0)
+    if scope ~= 'boxes' then
+        for _, item in pairs(Player.PlayerData.items or {}) do
+            if item and Cards.Info[item.name] then
+                counts[item.name] = (counts[item.name] or 0) + (tonumber(item.amount) or 0)
+            end
+        end
+    end
+    if scope then
+        for _, stashId in ipairs(CardsServer.getBoxIds(src)) do
+            for _, item in pairs(getStashItems(stashId) or {}) do
+                if type(item) == 'table' and Cards.Info[item.name] then
+                    counts[item.name] = (counts[item.name] or 0) + (tonumber(item.amount) or 0)
+                end
+            end
         end
     end
     return counts
+end
+
+-- Removes `amount` of a card / set, taking from the inventory first and then from the player's
+-- card boxes (scope 'boxes' = card boxes only). All or nothing: if anything fails, what was
+-- already taken is handed back.
+function CardsServer.removeCards(src, name, amount, reason, scope)
+    amount = math.floor(tonumber(amount) or 0)
+    if amount < 1 or not Cards.Info[name] then return false end
+
+    local inInventory = scope == 'boxes' and 0 or (CardsServer.countCards(src)[name] or 0)
+    local left, taken, touched = amount, {}, {}
+
+    local fromInventory = math.min(inInventory, left)
+    if fromInventory > 0 then
+        if not Inventory:RemoveItem(src, name, fromInventory, nil, reason) then return false end
+        taken[#taken + 1] = { target = src, amount = fromInventory }
+        left = left - fromInventory
+    end
+
+    if left > 0 then
+        for _, stashId in ipairs(CardsServer.getBoxIds(src)) do
+            if left < 1 then break end
+            local have = 0
+            for _, item in pairs(getStashItems(stashId) or {}) do
+                if type(item) == 'table' and item.name == name then have = have + (tonumber(item.amount) or 0) end
+            end
+            local count = math.min(have, left)
+            if count > 0 then
+                if not Inventory:RemoveItem(stashId, name, count, nil, reason) then break end
+                taken[#taken + 1] = { target = stashId, amount = count }
+                touched[stashId] = true
+                left = left - count
+            end
+        end
+    end
+
+    if left > 0 then
+        for _, entry in ipairs(taken) do
+            Inventory:AddItem(entry.target, name, entry.amount, nil, nil, (reason or 'rsg-cards') .. '-refund')
+        end
+        return false
+    end
+
+    for stashId in pairs(touched) do Inventory:SaveStash(stashId) end
+    return true
 end
 
 local function debugPrint(...)
@@ -184,7 +266,8 @@ local function grantCard(src, card, reason)
     local added = Inventory:CanAddItem(src, card, 1) and Inventory:AddItem(src, card, 1, nil, nil, reason)
     if not added then
         -- no room: drop it at the player's feet rather than losing it
-        local dropped = pcall(function() Inventory:ForceDropItem(src, card, 1, nil, reason) end)
+        local ok, result = pcall(function() return Inventory:ForceDropItem(src, card, 1, nil, reason) end)
+        local dropped = ok and result ~= false
         CardsServer.notify(src, locale(dropped and 'inventory_full_dropped' or 'inventory_full'), 'error')
         if not dropped then return false end
     end
@@ -306,8 +389,10 @@ RSGCore.Functions.CreateCallback('rsg-cards:server:getPickups', function(source,
     local Player = RSGCore.Functions.GetPlayer(source)
     if not Player then return cb({}) end
 
+    local citizenid = Player.PlayerData.citizenid
+    pickupOwner[source] = citizenid
     local now, cooldown, remaining = os.time(), Config.Card.Cooldown * 60, {}
-    for card, pickedAt in pairs(loadPickups(Player.PlayerData.citizenid)) do
+    for card, pickedAt in pairs(loadPickups(citizenid)) do
         local left = cooldown - (now - pickedAt)
         if left > 0 then remaining[card] = left end
     end
@@ -323,6 +408,7 @@ RSGCore.Functions.CreateCallback('rsg-cards:server:pickupCard', function(source,
     if not CardsServer.isNear(src, point.coords, Config.Card.PickupDistance + 3.0) then return cb(false) end
 
     local citizenid = Player.PlayerData.citizenid
+    pickupOwner[src] = citizenid
     local list = loadPickups(citizenid)
     local now, cooldown = os.time(), Config.Card.Cooldown * 60
     local left = list[point.item] and (cooldown - (now - list[point.item])) or 0
@@ -591,8 +677,9 @@ AddEventHandler('playerDropped', function()
     local src = source
     local Player = RSGCore.Functions.GetPlayer(src)
     closeBox(src)
+    if pickupOwner[src] then pickups[pickupOwner[src]] = nil end
+    pickupOwner[src] = nil
     if Player then
-        pickups[Player.PlayerData.citizenid] = nil
         finishPack(src)
     elseif pendingPacks[src] then
         print(('^3[rsg-cards] player %s left with unopened pack cards: %s^7'):format(src, table.concat(pendingPacks[src].cards, ', ')))

@@ -36,10 +36,10 @@ local function getStrings()
     for _, key in ipairs({
         'pack_title', 'pack_subtitle', 'pack_hint', 'found_title', 'found_subtitle', 'new_card', 'collection_progress',
         'close', 'tier_basic', 'tier_rare', 'tier_ultra', 'tier_v', 'tier_vmax', 'tier_deck',
-        'vendor_title', 'vendor_subtitle', 'vendor_empty', 'vendor_each', 'vendor_owned', 'sell', 'sell_all', 'buy_supplies',
+        'vendor_title', 'vendor_subtitle', 'vendor_empty', 'vendor_empty_boxes', 'vendor_each', 'vendor_owned', 'sell', 'sell_all', 'buy_supplies',
         'confirm_title', 'confirm_sell_all', 'confirm', 'cancel',
         'sets_title', 'sell_title', 'set_ready', 'make_set', 'set_pill',
-        'trade_title', 'trade_subtitle', 'trade_empty', 'trade_button', 'trade_needs', 'trade_refresh',
+        'trade_title', 'trade_subtitle', 'trade_empty', 'trade_button', 'trade_needs', 'trade_refresh', 'trade_completed',
     }) do
         uiStrings[key] = locale(key)
     end

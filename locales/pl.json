@@ -64,5 +64,8 @@
     "set_missing": "Nie masz wszystkich kart z tego zestawu",
     "bundle_sets": "Połącz zestawy",
     "bundle_done": "Połączono kompletne zestawy w pudełku na karty: %s",
-    "bundle_none": "W tym pudełku nie ma kompletnych zestawów. Zestaw wymaga wszystkich %s kart."
+    "bundle_none": "W tym pudełku nie ma kompletnych zestawów. Zestaw wymaga wszystkich %s kart.",
+    "vendor_empty_boxes": "Sprzedawca skupuje tylko karty przechowywane w pudełku na karty, które masz przy sobie",
+    "trade_done": "Ta prośba została już przez ciebie zrealizowana",
+    "trade_completed": "Zrealizowano"
 }

@@ -64,5 +64,8 @@
     "set_missing": "Du hast nicht alle Karten dieses Sets",
     "bundle_sets": "Sets bündeln",
     "bundle_done": "%s vollständige(s) Set(s) in deiner Kartenbox gebündelt",
-    "bundle_none": "In dieser Box sind keine vollständigen Sets. Ein Set braucht alle %s Karten."
+    "bundle_none": "In dieser Box sind keine vollständigen Sets. Ein Set braucht alle %s Karten.",
+    "vendor_empty_boxes": "Der Händler kauft nur Karten, die in einer Kartenbox liegen, die du bei dir trägst",
+    "trade_done": "Du hast diese Anfrage bereits erledigt",
+    "trade_completed": "Erledigt"
 }

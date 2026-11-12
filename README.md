@@ -13,7 +13,8 @@ Collectable cigarette cards for the RSG Framework: 144 cards in 12 sets, found i
 - **Cards in the world** – 143 cards are hidden around the map. Pick one up and that spot goes on a per-character cooldown (saved in the database, survives restarts)
 - **Eagle Eye** – world cards glow in Eagle Eye and a heartbeat gets faster the closer you are
 - **Card vendors** – buy packs and storage boxes, sell single cards, complete sets or everything at once
-- **Make sets** – a vendor spots when you hold all 12 cards of a set and turns them into the complete set
+- **Make sets** – a vendor spots when you hold all 12 cards of a set (in your inventory or in your card boxes) and turns them into the complete set
+- **Boxes count** – vendors check the card boxes you carry as well as your inventory, for sets and single cards, and take what they buy or use from the boxes when your inventory runs out
 - **Card collectors** – NPCs who swap a handful of cards from one set for the complete set. Requests rotate on a timer
 - **Storage box** – every box gets its own serial number and stash, opens beside your inventory, and only holds cards, sets and packs. A **Bundle Sets** button at the top of the box turns every complete run of 12 cards inside it into the complete set
 - **Inspect** – use a card from your inventory to hold it and turn it over
@@ -51,6 +52,7 @@ Everything is in `shared/config.lua`.
 | Option | Default | Description |
 |---|---|---|
 | `Config.Debug` | `false` | Extra console output |
+| `Config.VersionCheck` | `true` | Prints a console message on start when a newer version is on GitHub |
 | `Config.AutoDatabase` | `true` | Create tables on start. `false` = import `install.sql` yourself |
 | `Config.AllowPushToTalkWhileOpen` | `true` | Keep push-to-talk working while the UI is open |
 | `Config.PushToTalkControls` | `{ 0x4BC9DABB }` | Controls left enabled while the UI is open |
@@ -75,12 +77,14 @@ Everything is in `shared/config.lua`.
 | `Config.Sounds` | enabled | interact-sound names for opening a pack / flipping a card |
 | `Config.Shop.Payment` | `cash` | Money type paid for sold cards (`cash` or `bloodmoney`) |
 | `Config.Shop.CraftSets` | `true` | Vendors turn all 12 cards of a set into the complete set |
+| `Config.Shop.BoxesOnly` | `true` | Vendors only look in the card boxes the player carries; `false` also uses loose cards in the inventory |
 | `Config.Shop.Items` | pack $5, box $50 | What vendors sell (`amount` = stock) |
 | `Config.Shop.Locations` | 2 | Vendor NPCs |
 | `Config.Trades.Refresh` | `90` | Minutes between new collector requests |
 | `Config.Trades.MaxActive` | `3` | Requests per collector |
 | `Config.Trades.MinCards` / `MaxCards` | `3` / `8` | Cards a request asks for |
 | `Config.Trades.RewardAmount` | `1` | Complete sets given per trade |
+| `Config.Trades.OncePerPlayer` | `true` | Each request can be completed once per player until the requests refresh (stops endless cheap-cards-for-sets trading) |
 | `Config.Trades.Locations` | 12 | Collector NPCs |
 | `Config.Webhook` | `rsg-cards` | rsg-log webhook name, title and colour |
 

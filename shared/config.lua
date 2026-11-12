@@ -2,6 +2,9 @@ Config = {}
 
 Config.Debug = false
 
+-- Prints a console message on start when a newer version is available on GitHub.
+Config.VersionCheck = true
+
 -- Database: tables are created automatically on start.
 -- Set to false to import install.sql manually instead.
 Config.AutoDatabase = true
@@ -139,6 +142,8 @@ Config.Shop = {
     InteractDistance = 5.0,    -- server-side distance check
     PersistStock     = true,   -- keep stock across restarts (rsg-inventory)
     CraftSets        = true,   -- vendors turn all 12 cards of a set into the complete set
+    BoxesOnly        = true,   -- true = vendors only look in the card boxes the player carries (loose cards in the inventory are ignored)
+                               -- false = vendors look in the inventory first, then the card boxes
 
     -- amount = stock
     Items = {
@@ -172,6 +177,7 @@ Config.Trades = {
     MinCards         = 3,   -- cards an offer asks for (min)
     MaxCards         = 8,   -- cards an offer asks for (max)
     RewardAmount     = 1,   -- complete sets given per trade
+    OncePerPlayer    = true, -- each request can only be completed once per player (until the requests refresh)
     InteractDistance = 5.0, -- server-side distance check
 
     Locations = {

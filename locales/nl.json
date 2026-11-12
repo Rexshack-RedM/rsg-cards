@@ -64,5 +64,8 @@
     "set_missing": "Je hebt niet alle kaarten van deze set",
     "bundle_sets": "Sets bundelen",
     "bundle_done": "%s complete set(s) gebundeld in je kaartendoos",
-    "bundle_none": "Er zitten geen complete sets in deze doos. Een set heeft alle %s kaarten nodig."
+    "bundle_none": "Er zitten geen complete sets in deze doos. Een set heeft alle %s kaarten nodig.",
+    "vendor_empty_boxes": "De verkoper koopt alleen kaarten die in een kaartendoos zitten die je bij je hebt",
+    "trade_done": "Je hebt dit verzoek al voltooid",
+    "trade_completed": "Voltooid"
 }

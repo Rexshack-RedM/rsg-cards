@@ -64,5 +64,8 @@
     "set_missing": "Vous n'avez pas toutes les cartes de cette série",
     "bundle_sets": "Regrouper les sets",
     "bundle_done": "%s set(s) complet(s) regroupé(s) dans ta boîte à cartes",
-    "bundle_none": "Il n'y a aucun set complet dans cette boîte. Un set nécessite ses %s cartes."
+    "bundle_none": "Il n'y a aucun set complet dans cette boîte. Un set nécessite ses %s cartes.",
+    "vendor_empty_boxes": "Le vendeur n'achète que les cartes rangées dans une boîte à cartes que vous portez",
+    "trade_done": "Vous avez déjà terminé cette demande",
+    "trade_completed": "Terminé"
 }

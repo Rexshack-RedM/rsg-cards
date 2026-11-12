@@ -231,7 +231,7 @@ function renderVendor(data) {
   });
 
   const empty = $('vendor-empty');
-  empty.textContent = t('vendor_empty');
+  empty.textContent = t(data && data.boxesOnly ? 'vendor_empty_boxes' : 'vendor_empty');
   empty.classList.toggle('hidden', items.length > 0);
   list.classList.toggle('hidden', items.length === 0);
 
@@ -251,7 +251,7 @@ function renderTrades(data) {
   list.replaceChildren();
 
   offers.forEach((offer) => {
-    const complete = offer.have >= offer.need;
+    const complete = offer.have >= offer.need && !offer.done;
     const row = el('div', 'row offer');
 
     const head = el('div', 'row-head');
@@ -262,7 +262,9 @@ function renderTrades(data) {
       el('div', 'row-title', offer.amount > 1 ? `${offer.amount}x ${offer.label}` : offer.label),
       el('div', 'row-desc', t('trade_needs', offer.need))
     );
-    const pill = el('span', `pill ${complete ? 'ok' : 'warn'}`, `${offer.have}/${offer.need}`);
+    const pill = offer.done
+      ? el('span', 'pill ok', t('trade_completed'))
+      : el('span', `pill ${complete ? 'ok' : 'warn'}`, `${offer.have}/${offer.need}`);
     const button = el('button', 'wood-btn small', t('trade_button'));
     button.disabled = !complete;
     button.addEventListener('click', async () => {

@@ -64,5 +64,8 @@
     "set_missing": "Você não tem todos os cartões desta coleção",
     "bundle_sets": "Agrupar conjuntos",
     "bundle_done": "%s conjunto(s) completo(s) agrupado(s) na sua caixa de cartas",
-    "bundle_none": "Não há conjuntos completos nesta caixa. Um conjunto precisa de todas as suas %s cartas."
+    "bundle_none": "Não há conjuntos completos nesta caixa. Um conjunto precisa de todas as suas %s cartas.",
+    "vendor_empty_boxes": "O vendedor só compra cartas guardadas em uma caixa de cartas que você esteja carregando",
+    "trade_done": "Você já concluiu este pedido",
+    "trade_completed": "Concluído"
 }
