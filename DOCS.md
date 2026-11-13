@@ -285,7 +285,7 @@ With `Config.AutoDatabase = true` these are created on start, and a legacy `hdrp
 | Collector request shows *Completed* | The player already did it; new requests arrive every `Config.Trades.Refresh` minutes or with `/refreshcardtrades` |
 | Vendor has nothing to buy | Stock is `amount` in `Config.Shop.Items`; with persistent stock it only refills when rsg-inventory restocks |
 
-Support: https://buymeacoffee.com/rexshack
+Support the Project : https://rexshack.tebex.store/
 
 
 ## Vendor and card boxes
