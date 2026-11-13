@@ -128,4 +128,4 @@ Adding a set: add a line to `Config.Sets`, add the 13 items (`card_cigcard_<id>`
 
 Original script (tilp-hdrp-collectablecards) by Sadicius ([linktr.ee/sadicius](https://linktr.ee/sadicius)) and Tankie ([linktr.ee/tankietwitch](https://linktr.ee/tankietwitch)).
 
-Support: https://buymeacoffee.com/rexshack
+Support the Project : https://rexshack.tebex.store/
