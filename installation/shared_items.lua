@@ -1,11 +1,11 @@
     -- RSG-CARDS - CIGARETTE CARD COLLECTING --
     -- add to rsg-core/shared/items.lua
 
-    card_storage_box        = {name = 'card_storage_box',       label = 'Storage Cards',            weight = 50,  type = 'item',    image = 'card_storage_box.png',         unique = true,   useable = true,  shouldClose = false, combinable = nil,    description = 'Used to store cigarette collector cards' },
+    card_storage_box        = {name = 'card_storage_box',       label = 'Card Collector Box',       weight = 50,  type = 'item',    image = 'card_storage_box.png',         unique = true,   useable = true,  shouldClose = false, combinable = nil, category = 'tool',    description = 'Used to store cigarette collector cards' },
     ---------------------------------------
     -- CARDS DROP --
     ---------------------------------------
-    card_package_cards       = {name = 'card_package_cards',    label = 'Package cards',           weight = 0,  type = 'item',     image = 'collector_envelope.png',       unique = false,  useable = true,  shouldClose = true,  combinable = nil, category = 'cardpack',    description = 'Discover new cards to sell or trade'},
+    card_package_cards       = {name = 'card_package_cards',    label = 'Package cards',            weight = 0,  type = 'item',     image = 'collector_envelope.png',       unique = false,  useable = true,  shouldClose = true,  combinable = nil, category = 'cardpack',    description = 'Discover new cards to sell or trade'},
     ---------------------------------------
     -- Stars of the stage
     ---------------------------------------
