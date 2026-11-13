@@ -154,15 +154,15 @@ Config.Shop = {
     Locations = {
         {
             id        = 'CardshopCollect',
-            coords    = vector3(1296.75, -6941.65, 55.31),
-            npcmodel  = `mp_u_f_m_nat_traveler_01`,
-            npccoords = vector4(1296.75, -6941.65, 55.31, 208.93),
-        },
-        {
-            id        = 'CardshopCollect2',
             coords    = vector3(2855.22, -1223.84, 47.58),
             npcmodel  = `mp_u_f_m_nat_traveler_01`,
             npccoords = vector4(2855.22, -1223.84, 47.58, 32.84),
+        },
+        {
+            id        = 'CardshopCollect2',
+            coords    = vector3(1296.75, -6941.65, 55.31),
+            npcmodel  = `mp_u_f_m_nat_traveler_01`,
+            npccoords = vector4(1296.75, -6941.65, 55.31, 208.93),
         },
     },
 }
