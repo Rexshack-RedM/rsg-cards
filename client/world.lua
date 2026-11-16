@@ -15,18 +15,6 @@ local loggedIn = false
 ---------------------------------------------------------------------
 -- HELPERS
 ---------------------------------------------------------------------
-local function loadModel(model)
-    local hash = type(model) == 'string' and joaat(model) or model
-    if not IsModelValid(hash) then return nil end
-    RequestModel(hash)
-    local timeout = GetGameTimer() + 5000
-    while not HasModelLoaded(hash) do
-        if GetGameTimer() > timeout then return nil end
-        Wait(10)
-    end
-    return hash
-end
-
 -- fades an entity in or out in its own thread so the spawn loop never stalls; `after` runs when done
 local function fade(entity, fadeIn, after)
     CreateThread(function()
@@ -100,7 +88,7 @@ end
 
 local function spawnNpc(index)
     local npc = npcs[index]
-    local hash = loadModel(npc.npcmodel)
+    local hash = CardsClient.loadModel(npc.npcmodel)
     if not hash then return end
 
     local c = npc.npccoords
@@ -235,7 +223,7 @@ end)
 local function spawnCard(index)
     local point = Config.CardPoints[index]
     local info = Cards.Info[point.item]
-    local hash = info and loadModel(info.model)
+    local hash = info and CardsClient.loadModel(info.model)
     if not hash then return end
 
     local c = point.coords
