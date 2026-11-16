@@ -2,7 +2,7 @@
 
 Collectable cigarette cards for the RSG Framework: 144 cards in 12 sets, found in the world, pulled from card packs, traded with collectors and sold to card vendors.
 
-**Version:** 3.1.0 · **Requires:** `rsg-core`, `rsg-inventory` (3.2.0+ for the Bundle Sets button), `rsg-target`, `oxmysql` · **Optional:** `interact-sound`, `rsg-log` · **ox_lib:** not required
+**Version:** 3.2.0 · **Requires:** `rsg-core`, `rsg-inventory` (3.2.0+ for the Bundle Sets button), `rsg-target`, `rsg-gizmo`, `oxmysql` · **Optional:** `interact-sound`, `rsg-log` · **ox_lib:** not required
 
 > Server owners and developers: see **[DOCS.md](DOCS.md)** for the architecture, events, callbacks, security model and database schema.
 
@@ -25,6 +25,7 @@ Collectable cigarette cards for the RSG Framework: 144 cards in 12 sets, found i
 - **First collector titles** – the first player on the server to complete each set gets a title in the collection viewer, and everyone online is told
 - **Player trading** – swap cards with a nearby player in a window where both sides see the offers and must confirm. Only spare copies can be offered by default, so nobody gives away their last card
 - **Sell Duplicates** – one button at the vendor sells every spare copy and keeps one of each card
+- **Admin card editor** – place, move and remove world cards in game with rsg-gizmo. Locations are stored in the database, so no config edits or restarts are needed
 - Server-authoritative: every reward, price and cooldown is decided on the server
 - House-style NUI, push-to-talk keeps working while it is open, rsg-target or prompts, 10 languages
 
@@ -101,7 +102,9 @@ Everything is in `shared/config.lua`.
 | `Config.PlayerTrade` | on, `/cardtrade`, 5 m | Player trading: `Distance`, `InviteSeconds`, `MaxPerSide`, `DuplicatesOnly` (only spare copies can be offered), `CountAsFound` (received cards count for the collection and set bonus) |
 | `Config.Webhook` | `rsg-cards` | rsg-log webhook name, title and colour |
 
-Card locations are in `shared/cards_points.lua` (`item` + `coords`).
+| `Config.Editor` | on, `admin` | Admin card editor: `Permission`, `SeedFromConfig`, `Distance` |
+
+Card locations live in the database table `rsg_cards_points`. `shared/cards_points.lua` is only used to fill an empty table on the first start (when `Config.Editor.SeedFromConfig = true`); after that use the editor commands below.
 
 ## How to use
 
@@ -126,6 +129,11 @@ Card locations are in `shared/cards_points.lua` (`item` + `coords`).
 | `/refreshcardtrades` | admin | Give every collector new requests now |
 | `/cardcollection` | everyone | Open your collection and the leaderboard (name set by `Config.Collection.Command`) |
 | `/cardtrade [id]` | everyone | Ask a nearby player to trade cards (name set by `Config.PlayerTrade.Command`) |
+| `/cardplace [card]` | admin | Place a card with the gizmo, e.g. `/cardplace grl_c1`. Saved to the database |
+| `/cardmove` | admin | Move the nearest world card with the gizmo |
+| `/cardremove` | admin | Delete the nearest world card |
+| `/cardedit` | admin | Toggle showing every world card, ignoring your own cooldowns (so you can find the one to move or remove) |
+| `/cardmissing` | admin | List cards that have no world location |
 
 Give items for testing: `/giveitem [id] card_package_cards 1`, `/giveitem [id] card_storage_box 1`.
 

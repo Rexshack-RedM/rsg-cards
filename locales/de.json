@@ -120,5 +120,22 @@
     "ptrade_ready": "Bereit",
     "ptrade_unready": "Nicht bereit",
     "ptrade_hint": "Klicke auf eine Karte, um sie anzubieten. Klicke auf eine angebotene Karte, um sie zurückzunehmen.",
-    "ptrade_hint_dups": "Nur doppelte Karten können angeboten werden. Von jeder Karte bleibt immer eine."
+    "ptrade_hint_dups": "Nur doppelte Karten können angeboten werden. Von jeder Karte bleibt immer eine.",
+    "command_cardplace": "Sammelkarte mit dem Gizmo platzieren (Admin)",
+    "command_cardplace_card": "Karte, z. B. grl_c1",
+    "command_cardmove": "Nächste Weltkarte mit dem Gizmo verschieben (Admin)",
+    "command_cardremove": "Nächste Weltkarte entfernen (Admin)",
+    "command_cardedit": "Alle Weltkarten ohne Abklingzeit anzeigen (Admin, umschalten)",
+    "command_cardmissing": "Karten ohne Standort auflisten (Admin)",
+    "editor_added": "Kartenstandort gespeichert: %s",
+    "editor_moved": "Kartenstandort verschoben: %s",
+    "editor_removed": "Kartenstandort entfernt: %s",
+    "editor_exists": "Diese Karte hat bereits einen Standort: %s",
+    "editor_unknown_card": "Unbekannte Karte",
+    "editor_no_point": "Keine Karte in der Nähe. Mit /cardedit werden alle Karten angezeigt",
+    "editor_missing": "Karten ohne Standort: %s",
+    "editor_none_missing": "Jede Karte hat einen Standort",
+    "editor_edit_on": "Alle Weltkarten werden angezeigt",
+    "editor_edit_off": "Wieder normal",
+    "editor_unavailable": "Kartenbearbeitung ist nicht verfügbar"
 }

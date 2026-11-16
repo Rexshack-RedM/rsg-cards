@@ -120,5 +120,22 @@
     "ptrade_ready": "Gata",
     "ptrade_unready": "Nu e gata",
     "ptrade_hint": "Dă clic pe o carte ca să o oferi. Dă clic pe o carte oferită ca să o retragi.",
-    "ptrade_hint_dups": "Pot fi oferite doar copiile duplicate. Se păstrează mereu câte una din fiecare carte."
+    "ptrade_hint_dups": "Pot fi oferite doar copiile duplicate. Se păstrează mereu câte una din fiecare carte.",
+    "command_cardplace": "Plasează o carte de colecție cu gizmo (admin)",
+    "command_cardplace_card": "Carte, ex. grl_c1",
+    "command_cardmove": "Mută cea mai apropiată carte din lume cu gizmo (admin)",
+    "command_cardremove": "Șterge cea mai apropiată carte din lume (admin)",
+    "command_cardedit": "Arată toate cărțile din lume fără timp de așteptare (admin, comutare)",
+    "command_cardmissing": "Listează cărțile fără locație (admin)",
+    "editor_added": "Locația cărții a fost salvată: %s",
+    "editor_moved": "Locația cărții a fost mutată: %s",
+    "editor_removed": "Locația cărții a fost ștearsă: %s",
+    "editor_exists": "Această carte are deja o locație: %s",
+    "editor_unknown_card": "Carte necunoscută",
+    "editor_no_point": "Nicio carte în apropiere. Folosește /cardedit pentru a le arăta pe toate",
+    "editor_missing": "Cărți fără locație: %s",
+    "editor_none_missing": "Fiecare carte are o locație",
+    "editor_edit_on": "Se afișează toate cărțile din lume",
+    "editor_edit_off": "Înapoi la normal",
+    "editor_unavailable": "Editarea cărților nu este disponibilă"
 }

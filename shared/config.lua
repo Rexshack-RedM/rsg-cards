@@ -240,6 +240,15 @@ Config.PlayerTrade = {
 ---------------------------------------------------------------------
 -- LOGGING (rsg-log)
 ---------------------------------------------------------------------
+-- Admin editor: place, move and remove card locations in game with rsg-gizmo.
+-- Locations are stored in the database (rsg_cards_points). shared/cards_points.lua is only used to fill an empty table.
+Config.Editor = {
+    Enabled        = true,
+    Permission     = 'admin', -- /cardplace [card], /cardmove, /cardremove, /cardedit, /cardmissing
+    SeedFromConfig = true,    -- copy Config.CardPoints into the database when the table is empty
+    Distance       = 10.0,    -- the admin must be this close to a location to place, move or remove it (server checked)
+}
+
 Config.Webhook = {
     Name   = 'rsg-cards', -- must match a webhook entry in rsg-log
     Title  = 'CARDS',

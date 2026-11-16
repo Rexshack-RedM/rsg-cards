@@ -27,9 +27,10 @@ For server owners and developers. Player-facing overview and install steps are i
 |---|---|
 | `fxmanifest.lua` | Resource manifest. Locales are loaded by rsg-core (`@rsg-core/shared/locale.lua`) |
 | `shared/config.lua` | All settings: sets, prices, pack chances, cooldowns, NPC locations |
-| `shared/cards_points.lua` | `Config.CardPoints`: world location of each card |
+| `shared/cards_points.lua` | `Config.CardPoints`: starting world locations. Only copied into the database on the first start; the database is the source of truth afterwards |
 | `shared/cards.lua` | Builds the global `Cards` lookup tables from `Config.Sets` |
 | `server/server.lua` | Database setup, shared server helpers (`CardsServer`), packs, world pickups, collection tracking, storage box, inspect usable items |
+| `server/points.lua` | Card locations in `rsg_cards_points`, the `CardsServer.points` registry, sync to clients and the admin editor (`/cardplace`, `/cardmove`, `/cardremove`, `/cardedit`, `/cardmissing`) |
 | `server/collection.lua` | Set completion (bonus, first collector), collection viewer and leaderboard data, `/cardcollection`, leaderboard names |
 | `server/vendor.lua` | Card vendor: selling cards and sets, making sets from 12 cards, rsg-inventory shop for packs and boxes |
 | `server/trades.lua` | Card collectors: rotating requests and trades, `/refreshcardtrades` |
@@ -74,7 +75,15 @@ Set ids: `act`, `amer`, `aml`, `inv`, `art`, `grl`, `lnd`, `plt`, `gun`, `hrs`, 
 | `Cards.ByTier[tier]` | Single-card item names of that tier |
 | `Cards.Total` | Number of single cards (144) |
 
-### `Config.CardPoints` entry
+### Card location (`CardsServer.points[id]`, server) / `points[id]` (client)
+
+```lua
+{ id = 17, item = 'card_cigcard_plt_c1', coords = vector4(2238.9, -768.7, 43.4, 77.0), exact = false }
+```
+
+`exact = true` means the location was set with the gizmo, so the prop is not snapped to the ground. Locations seeded from the config use `exact = false`.
+
+### `Config.CardPoints` entry (only used to seed the database)
 
 ```lua
 { item = 'card_cigcard_plt_c1', coords = vector4(2238.9089, -768.6769, 43.4078, 77.0264) }
@@ -113,7 +122,8 @@ Other resources normally don't need these. They are listed so you know what each
 |---|---|---|---|
 | `rsg-cards:server:flipCard` | `index` | card data or `false` | Player has an open pack, index valid and not flipped yet |
 | `rsg-cards:server:getPickups` | – | `{ [item] = secondsLeft }` | – |
-| `rsg-cards:server:pickupCard` | `pointIndex` | card data + `cooldown`, `{ cooldown }` or `false` | Distance to the point, per-character cooldown, rate limit, inventory space |
+| `rsg-cards:server:getPoints` | – | list of `{ id, item, x, y, z, w, exact }` | Waits (up to 10 s) until the points are loaded from the database |
+| `rsg-cards:server:pickupCard` | `pointId` | card data + `cooldown`, `{ cooldown }` or `false` | Distance to the point, per-character cooldown, rate limit, inventory space |
 | `rsg-cards:server:getVendor` | `shopId` | `{ items, sets, boxesOnly }` or `false` | Distance to the vendor, rate limit (0.5 s). `sets` = sets the player holds all 12 cards of; `boxesOnly` mirrors `Config.Shop.BoxesOnly` (the UI uses it to explain an empty list) |
 | `rsg-cards:server:sell` | `shopId, item, amount` | `{ message, type, items, sets }` or `false` | Distance, item is a card, whole amount ≥ 1 and owned, rate limit. Price from `Config.Sets` |
 | `rsg-cards:server:sellAll` | `shopId` | `{ message, type, items, sets }` or `false` | Distance, rate limit. Only cards and sets are sold |
@@ -136,6 +146,9 @@ Card data: `{ item, label, image, tier, deck, isNew, collected, total, setComple
 | `rsg-cards:server:ptradeOffer` | `name, amount` | Set how many of a card/set the player offers (0 takes it back). Checks it is a card item, whole amount, owned (minus the copy kept when `DuplicatesOnly`) and within `MaxPerSide`. Clears both Ready flags |
 | `rsg-cards:server:ptradeReady` | `ready` | Sets the player's Ready flag. When both are ready the server re-checks everything and swaps the cards |
 | `rsg-cards:server:ptradeCancel` | – | Leave the trade (also sent when the window is closed) |
+| `rsg-cards:server:pointAdd` | `item, x, y, z, heading` | Admin: add a card location. Checks `Config.Editor`, permission, rate limit (1 s), finite numbers, admin within `Config.Editor.Distance`, single card, no location yet for that card |
+| `rsg-cards:server:pointMove` | `id, x, y, z, heading` | Admin: move a location (same checks, the id must exist) |
+| `rsg-cards:server:pointRemove` | `id` | Admin: delete a location (same checks, admin near the location) |
 | `rsg-cards:server:openShop` | `shopId` | Opens the rsg-inventory shop (distance checked) |
 | `rsg-cards:server:boxClosed` | – | Inventory closed: checks the box contents one last time |
 | `rsg-inventory:server:move` | – | Also handled here (read-only) to check the open box after a move |
@@ -161,6 +174,9 @@ Card data: `{ item, label, image, tier, deck, isNew, collected, total, setComple
 | `rsg-cards:client:openTrades` | `locationId` | (local) Open the collector UI |
 | `rsg-cards:client:takecard` | `pointIndex` | (local) Pick up a world card (used by prompts) |
 | `rsg-cards:client:revealCard` | card data | (local) Show a found card |
+| `rsg-cards:client:setPoint` | `id, data` | A card location was added, moved (`data = { id, item, x, y, z, w, exact }`) or removed (`data = nil`) |
+| `rsg-cards:client:editorPlace` | `item` | Admin: start placing a card with rsg-gizmo |
+| `rsg-cards:client:editorMove` / `editorRemove` / `editorToggle` | – | Admin: move or remove the nearest spawned card, or toggle showing all cards |
 
 ### Commands
 
@@ -169,6 +185,11 @@ Card data: `{ item, label, image, tier, deck, isNew, collected, total, setComple
 | `/refreshcardtrades` | `admin` | New collector requests immediately |
 | `/cardcollection` | everyone | Open your collection and the leaderboard (`Config.Collection.Command`) |
 | `/cardtrade [id]` | everyone | Ask a nearby player to trade cards (`Config.PlayerTrade.Command`) |
+| `/cardplace [card]` | `Config.Editor.Permission` | Place a card with rsg-gizmo (`grl_c1` or the full item name) |
+| `/cardmove` | `Config.Editor.Permission` | Move the nearest spawned world card with rsg-gizmo |
+| `/cardremove` | `Config.Editor.Permission` | Delete the nearest spawned world card |
+| `/cardedit` | `Config.Editor.Permission` | Toggle showing all world cards regardless of your cooldowns |
+| `/cardmissing` | `Config.Editor.Permission` | List cards without a world location |
 
 ## Integration examples
 
@@ -330,9 +351,17 @@ Every option in `shared/config.lua`. Tables list the default.
 | `Config.PlayerTrade.MaxPerSide` | `30` | Most cards one player can offer |
 | `Config.PlayerTrade.DuplicatesOnly` | `true` | Only spare copies can be offered; one of each single card is kept |
 | `Config.PlayerTrade.CountAsFound` | `true` | Received cards count for the collection, set bonus and leaderboard |
+| `Config.Editor.Enabled` | `true` | Admin card editor and the commands |
+| `Config.Editor.Permission` | `'admin'` | Permission for the editor commands (also checked on the server for every edit) |
+| `Config.Editor.SeedFromConfig` | `true` | Copy `Config.CardPoints` into the database when `rsg_cards_points` is empty |
+| `Config.Editor.Distance` | `10.0` | Admin must be this close to the location (server checked) |
 | `Config.Webhook` | `rsg-cards` | `{ Name, Title, Colour }`; `Name` must match an rsg-log webhook |
 
 ## Flows
+
+### Editing a card location
+
+`/cardplace grl_c1` -> server validates the name and sends `rsg-cards:client:editorPlace` -> client `exports['rsg-gizmo']:Place(model, { rotation = 'z' })` -> on confirm `rsg-cards:server:pointAdd(item, x, y, z, heading)` -> server checks permission, throttle, that the numbers are finite, the admin is within `Config.Editor.Distance`, the card is a single card with no location yet -> inserts the row -> `rsg-cards:client:setPoint` to everyone. `pointMove` and `pointRemove` work the same way on an existing id.
 
 ### Opening a pack
 
@@ -342,7 +371,7 @@ Every option in `shared/config.lua`. Tables list the default.
 
 ### World card pickup
 
-Client asks `pickup <pointId>` -> server checks the point exists, distance (`Config.Card.PickupDistance`), cooldown (`rsg_cards_pickups`) and throttle -> gives the card -> `markFound`.
+Client asks `pickup <pointId>` (the `rsg_cards_points` id) -> server checks the point exists, distance (`Config.Card.PickupDistance`), cooldown (`rsg_cards_pickups`) and throttle -> gives the card -> `markFound`.
 
 ### Sell, sell all, sell duplicates, make set
 
@@ -420,6 +449,7 @@ SELECT * FROM rsg_cards_unclaimed;
 | Data | Where | Notes |
 |---|---|---|
 | Cards a character has ever found | `rsg_cards_collection` | Written when a single card is given by a pack or a pickup |
+| World card locations | `rsg_cards_points` | One row per card location. Filled from `Config.CardPoints` when the table is empty, then edited in game. Changes are sent to every client straight away |
 | World card cooldowns | `rsg_cards_pickups` | Unix time of the last pickup per character and card. Cached in memory while the player is online |
 | Storage box registry | `rsg_cards_boxes` | Serial, creator, last user. Box contents live in rsg-inventory's stash storage |
 | Collector requests | memory | Regenerated on resource start and every `Config.Trades.Refresh` minutes. Who completed which request is kept in memory until the next refresh |
@@ -474,6 +504,19 @@ CREATE TABLE IF NOT EXISTS `rsg_cards_collection` (
     `card`        VARCHAR(50) NOT NULL,
     `obtained_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`citizenid`, `card`)
+);
+
+CREATE TABLE IF NOT EXISTS `rsg_cards_points` (
+    `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `item`       VARCHAR(50) NOT NULL,
+    `x`          DOUBLE NOT NULL,
+    `y`          DOUBLE NOT NULL,
+    `z`          DOUBLE NOT NULL,
+    `heading`    DOUBLE NOT NULL DEFAULT 0,
+    `exact`      TINYINT(1) NOT NULL DEFAULT 0,
+    `created_by` VARCHAR(50) NOT NULL DEFAULT 'config',
+    PRIMARY KEY (`id`),
+    INDEX `idx_item` (`item`)
 );
 
 CREATE TABLE IF NOT EXISTS `rsg_cards_pickups` (
@@ -537,9 +580,11 @@ With `Config.AutoDatabase = true` these are created on start, and a legacy `hdrp
 
 **Move or add a vendor / collector** – add an entry to `Config.Shop.Locations` or `Config.Trades.Locations` with a unique `id`, `coords`, `npcmodel` and `npccoords`.
 
-**Move or add a world card** – edit `shared/cards_points.lua`. `card_cigcard_grl_c1` has no world location in the shipped data; add one if you want it findable outside packs.
+**Move or add a world card** – in game as an admin: `/cardplace grl_c1` (opens the gizmo, confirm to save), or stand next to a card and use `/cardmove` / `/cardremove` (use `/cardedit` first if the card is on cooldown for you). `/cardmissing` lists cards without a location (`card_cigcard_grl_c1` has none in the shipped data). Edits are saved in `rsg_cards_points` and sent to all players immediately. To start over from the config, empty the table and restart the resource (`TRUNCATE rsg_cards_points`).
 
 **Make world cards one-time only** – set `Config.Card.Cooldown` to a very large number of minutes.
+
+**Add cards from a script** – read `CardsServer.points` inside this resource, or `SELECT * FROM rsg_cards_points` from another one; other resources should not write the table directly (use the commands, so every client is updated).
 
 **Reset a character's cooldowns or collection** – `DELETE FROM rsg_cards_pickups WHERE citizenid = '...'` / `DELETE FROM rsg_cards_collection WHERE citizenid = '...'`, then have the player relog.
 

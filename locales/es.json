@@ -120,5 +120,22 @@
     "ptrade_ready": "Listo",
     "ptrade_unready": "No listo",
     "ptrade_hint": "Haz clic en una carta para ofrecerla. Haz clic en una carta ofrecida para retirarla.",
-    "ptrade_hint_dups": "Solo se pueden ofrecer copias repetidas. Siempre se conserva una de cada carta."
+    "ptrade_hint_dups": "Solo se pueden ofrecer copias repetidas. Siempre se conserva una de cada carta.",
+    "command_cardplace": "Colocar una carta coleccionable con el gizmo (admin)",
+    "command_cardplace_card": "Carta, p. ej. grl_c1",
+    "command_cardmove": "Mover la carta del mundo más cercana con el gizmo (admin)",
+    "command_cardremove": "Eliminar la carta del mundo más cercana (admin)",
+    "command_cardedit": "Mostrar todas las cartas del mundo sin espera (admin, alternar)",
+    "command_cardmissing": "Listar las cartas sin ubicación (admin)",
+    "editor_added": "Ubicación de la carta guardada: %s",
+    "editor_moved": "Ubicación de la carta movida: %s",
+    "editor_removed": "Ubicación de la carta eliminada: %s",
+    "editor_exists": "Esa carta ya tiene una ubicación: %s",
+    "editor_unknown_card": "Carta desconocida",
+    "editor_no_point": "No hay ninguna carta cerca. Usa /cardedit para mostrarlas todas",
+    "editor_missing": "Cartas sin ubicación: %s",
+    "editor_none_missing": "Todas las cartas tienen ubicación",
+    "editor_edit_on": "Mostrando todas las cartas del mundo",
+    "editor_edit_off": "De vuelta a lo normal",
+    "editor_unavailable": "La edición de cartas no está disponible"
 }

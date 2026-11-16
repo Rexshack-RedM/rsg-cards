@@ -120,5 +120,22 @@
     "ptrade_ready": "Klaar",
     "ptrade_unready": "Niet klaar",
     "ptrade_hint": "Klik op een kaart om hem aan te bieden. Klik op een aangeboden kaart om hem terug te nemen.",
-    "ptrade_hint_dups": "Alleen dubbele exemplaren kunnen worden aangeboden. Van elke kaart blijft er altijd één over."
+    "ptrade_hint_dups": "Alleen dubbele exemplaren kunnen worden aangeboden. Van elke kaart blijft er altijd één over.",
+    "command_cardplace": "Plaats een verzamelkaart met de gizmo (admin)",
+    "command_cardplace_card": "Kaart, bijv. grl_c1",
+    "command_cardmove": "Verplaats de dichtstbijzijnde wereldkaart met de gizmo (admin)",
+    "command_cardremove": "Verwijder de dichtstbijzijnde wereldkaart (admin)",
+    "command_cardedit": "Toon alle wereldkaarten zonder wachttijd (admin, schakelaar)",
+    "command_cardmissing": "Toon kaarten zonder locatie (admin)",
+    "editor_added": "Kaartlocatie opgeslagen: %s",
+    "editor_moved": "Kaartlocatie verplaatst: %s",
+    "editor_removed": "Kaartlocatie verwijderd: %s",
+    "editor_exists": "Die kaart heeft al een locatie: %s",
+    "editor_unknown_card": "Onbekende kaart",
+    "editor_no_point": "Geen kaart in de buurt. Gebruik /cardedit om alles te tonen",
+    "editor_missing": "Kaarten zonder locatie: %s",
+    "editor_none_missing": "Elke kaart heeft een locatie",
+    "editor_edit_on": "Alle wereldkaarten worden getoond",
+    "editor_edit_off": "Weer normaal",
+    "editor_unavailable": "Kaarten bewerken is niet beschikbaar"
 }

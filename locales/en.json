@@ -120,5 +120,22 @@
     "ptrade_ready": "Ready",
     "ptrade_unready": "Not ready",
     "ptrade_hint": "Click a card to offer it. Click an offered card to take it back.",
-    "ptrade_hint_dups": "Only spare copies can be offered. One of each card is always kept."
+    "ptrade_hint_dups": "Only spare copies can be offered. One of each card is always kept.",
+    "command_cardplace": "Place a collectable card with the gizmo (admin)",
+    "command_cardplace_card": "Card, e.g. grl_c1",
+    "command_cardmove": "Move the nearest world card with the gizmo (admin)",
+    "command_cardremove": "Remove the nearest world card (admin)",
+    "command_cardedit": "Show all world cards, ignoring cooldowns (admin, toggle)",
+    "command_cardmissing": "List cards that have no world location (admin)",
+    "editor_added": "Card location saved: %s",
+    "editor_moved": "Card location moved: %s",
+    "editor_removed": "Card location removed: %s",
+    "editor_exists": "That card already has a location: %s",
+    "editor_unknown_card": "Unknown card",
+    "editor_no_point": "No card nearby. Use /cardedit to show every card",
+    "editor_missing": "Cards without a location: %s",
+    "editor_none_missing": "Every card has a location",
+    "editor_edit_on": "Showing all world cards",
+    "editor_edit_off": "Back to normal",
+    "editor_unavailable": "Card editing is not available"
 }

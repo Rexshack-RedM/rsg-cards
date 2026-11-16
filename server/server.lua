@@ -261,6 +261,21 @@ local function ensureDatabase()
                 PRIMARY KEY (`citizenid`, `card`)
             )
         ]])
+
+        MySQL.query.await([[
+            CREATE TABLE IF NOT EXISTS `rsg_cards_points` (
+                `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                `item`       VARCHAR(50) NOT NULL,
+                `x`          DOUBLE NOT NULL,
+                `y`          DOUBLE NOT NULL,
+                `z`          DOUBLE NOT NULL,
+                `heading`    DOUBLE NOT NULL DEFAULT 0,
+                `exact`      TINYINT(1) NOT NULL DEFAULT 0,
+                `created_by` VARCHAR(50) NOT NULL DEFAULT 'config',
+                PRIMARY KEY (`id`),
+                INDEX `idx_item` (`item`)
+            )
+        ]])
     end)
 
     if not ok then
@@ -513,7 +528,7 @@ end)
 RSGCore.Functions.CreateCallback('rsg-cards:server:pickupCard', function(source, cb, index)
     local src = source
     local Player = RSGCore.Functions.GetPlayer(src)
-    local point = Config.CardPoints[tonumber(index) or 0]
+    local point = CardsServer.points[tonumber(index) or 0]
     if not Player or not point or not Cards.Info[point.item] then return cb(false) end
     if not CardsServer.throttle(src, 'pickup', 2) then return cb(false) end
     if not CardsServer.isNear(src, point.coords, Config.Card.PickupDistance + 3.0) then return cb(false) end

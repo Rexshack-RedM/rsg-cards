@@ -120,5 +120,22 @@
     "ptrade_ready": "準備完了",
     "ptrade_unready": "準備未完了",
     "ptrade_hint": "カードをクリックして提示します。提示したカードをクリックすると取り戻せます。",
-    "ptrade_hint_dups": "提示できるのは重複カードのみです。各カード1枚は常に残されます。"
+    "ptrade_hint_dups": "提示できるのは重複カードのみです。各カード1枚は常に残されます。",
+    "command_cardplace": "ギズモでコレクションカードを配置する（管理者）",
+    "command_cardplace_card": "カード名（例: grl_c1）",
+    "command_cardmove": "最も近いワールドのカードをギズモで移動する（管理者）",
+    "command_cardremove": "最も近いワールドのカードを削除する（管理者）",
+    "command_cardedit": "クールダウンを無視して全てのワールドカードを表示（管理者・切り替え）",
+    "command_cardmissing": "場所のないカードを一覧表示（管理者）",
+    "editor_added": "カードの場所を保存しました: %s",
+    "editor_moved": "カードの場所を移動しました: %s",
+    "editor_removed": "カードの場所を削除しました: %s",
+    "editor_exists": "このカードには既に場所があります: %s",
+    "editor_unknown_card": "不明なカード",
+    "editor_no_point": "近くにカードがありません。/cardedit で全て表示できます",
+    "editor_missing": "場所のないカード: %s",
+    "editor_none_missing": "全てのカードに場所があります",
+    "editor_edit_on": "全てのワールドカードを表示中",
+    "editor_edit_off": "通常に戻りました",
+    "editor_unavailable": "カードの編集は利用できません"
 }

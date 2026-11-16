@@ -120,5 +120,22 @@
     "ptrade_ready": "Gotowy",
     "ptrade_unready": "Niegotowy",
     "ptrade_hint": "Kliknij kartę, aby ją zaoferować. Kliknij oferowaną kartę, aby ją wycofać.",
-    "ptrade_hint_dups": "Można oferować tylko zbędne egzemplarze. Z każdej karty zawsze zostaje jedna."
+    "ptrade_hint_dups": "Można oferować tylko zbędne egzemplarze. Z każdej karty zawsze zostaje jedna.",
+    "command_cardplace": "Umieść kartę kolekcjonerską za pomocą gizmo (admin)",
+    "command_cardplace_card": "Karta, np. grl_c1",
+    "command_cardmove": "Przesuń najbliższą kartę ze świata za pomocą gizmo (admin)",
+    "command_cardremove": "Usuń najbliższą kartę ze świata (admin)",
+    "command_cardedit": "Pokaż wszystkie karty ze świata bez czasu odnowienia (admin, przełącznik)",
+    "command_cardmissing": "Wyświetl karty bez lokalizacji (admin)",
+    "editor_added": "Lokalizacja karty zapisana: %s",
+    "editor_moved": "Lokalizacja karty przesunięta: %s",
+    "editor_removed": "Lokalizacja karty usunięta: %s",
+    "editor_exists": "Ta karta ma już lokalizację: %s",
+    "editor_unknown_card": "Nieznana karta",
+    "editor_no_point": "Brak kart w pobliżu. Użyj /cardedit, aby pokazać wszystkie",
+    "editor_missing": "Karty bez lokalizacji: %s",
+    "editor_none_missing": "Każda karta ma lokalizację",
+    "editor_edit_on": "Pokazuję wszystkie karty ze świata",
+    "editor_edit_off": "Powrót do normy",
+    "editor_unavailable": "Edycja kart jest niedostępna"
 }

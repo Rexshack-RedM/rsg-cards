@@ -120,5 +120,22 @@
     "ptrade_ready": "Prêt",
     "ptrade_unready": "Pas prêt",
     "ptrade_hint": "Cliquez sur une carte pour la proposer. Cliquez sur une carte proposée pour la reprendre.",
-    "ptrade_hint_dups": "Seuls les doubles peuvent être proposés. Un exemplaire de chaque carte est toujours conservé."
+    "ptrade_hint_dups": "Seuls les doubles peuvent être proposés. Un exemplaire de chaque carte est toujours conservé.",
+    "command_cardplace": "Placer une carte à collectionner avec le gizmo (admin)",
+    "command_cardplace_card": "Carte, p. ex. grl_c1",
+    "command_cardmove": "Déplacer la carte du monde la plus proche avec le gizmo (admin)",
+    "command_cardremove": "Supprimer la carte du monde la plus proche (admin)",
+    "command_cardedit": "Afficher toutes les cartes du monde sans délai (admin, bascule)",
+    "command_cardmissing": "Lister les cartes sans emplacement (admin)",
+    "editor_added": "Emplacement de la carte enregistré : %s",
+    "editor_moved": "Emplacement de la carte déplacé : %s",
+    "editor_removed": "Emplacement de la carte supprimé : %s",
+    "editor_exists": "Cette carte a déjà un emplacement : %s",
+    "editor_unknown_card": "Carte inconnue",
+    "editor_no_point": "Aucune carte à proximité. Utilise /cardedit pour toutes les afficher",
+    "editor_missing": "Cartes sans emplacement : %s",
+    "editor_none_missing": "Chaque carte a un emplacement",
+    "editor_edit_on": "Toutes les cartes du monde sont affichées",
+    "editor_edit_off": "Retour à la normale",
+    "editor_unavailable": "L'édition des cartes n'est pas disponible"
 }

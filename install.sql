@@ -54,3 +54,17 @@ CREATE TABLE IF NOT EXISTS `rsg_cards_profiles` (
     `name`      VARCHAR(100) NOT NULL,
     PRIMARY KEY (`citizenid`)
 );
+
+-- World locations of the collectable cards (placed in game with /cardplace; filled from shared/cards_points.lua on first start).
+CREATE TABLE IF NOT EXISTS `rsg_cards_points` (
+    `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `item`       VARCHAR(50) NOT NULL,
+    `x`          DOUBLE NOT NULL,
+    `y`          DOUBLE NOT NULL,
+    `z`          DOUBLE NOT NULL,
+    `heading`    DOUBLE NOT NULL DEFAULT 0,
+    `exact`      TINYINT(1) NOT NULL DEFAULT 0,
+    `created_by` VARCHAR(50) NOT NULL DEFAULT 'config',
+    PRIMARY KEY (`id`),
+    INDEX `idx_item` (`item`)
+);
